@@ -1,0 +1,7 @@
+<doc>
+<style name="keyword" color="blue" />
+<style name="string" color="red" />
+<rule style="keyword">(?i)((repeat)|(REPEAT)(END_REPEAT)(end_repeat)|(IF)|(if)|(elsif)|(ELSIF)|(else)|(ELSE)|(then)|(THEN)|(EXIT)|(exit)|(end_if)|(END_IF)|(while)|(WHILE)|(do)|(DO)|(END_WHILE)|(end_while)|(for)|(FOR)|(BY)|(by)|(DO)|(do)|(end_for)|(END_FOR)|(CASE)|(case)|(end_case)|(END_CASE)|(of)|(OF))</rule>
+
+<rule style="string">\/\*[\s\S]*?\*\/</rule>
+</doc>
