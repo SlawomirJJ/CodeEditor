@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using System.IO;
-using FastColoredTextBoxNS;
 using System.Text.RegularExpressions;
+using FastColoredTextBoxNS;
 
 namespace CodeEditor
 {
@@ -20,7 +20,7 @@ namespace CodeEditor
         {
             InitializeComponent();
         }
-        
+
 
         private void SaveDlg()
         {
@@ -158,6 +158,38 @@ namespace CodeEditor
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void fastColoredTextBox1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        // Style
+        public Style GreenStyle = new TextStyle(Brushes.Green, null, FontStyle.Bold);
+        public Style KeyWordStyle = new TextStyle(Brushes.Blue, null, FontStyle.Bold);
+        public Style StringStyle = new TextStyle(Brushes.Red, null, FontStyle.Bold);
+        //private bool multilineCommand;
+
+        private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Range range = (sender as FastColoredTextBox).VisibleRange;
+            //clear style of changed range
+            range.ClearStyle(GreenStyle, StringStyle);
+            //comment highlighting
+            //e.ChangedRange.SetStyle(GreenStyle, @"//.*$", RegexOptions.Multiline);
+            //e.ChangedRange.SetStyle(GreenStyle, @"/\*.*", RegexOptions.Multiline);
+            
+
+            range.SetStyle(GreenStyle, @"//.*$", RegexOptions.Multiline);
+            range.SetStyle(GreenStyle, @"(/\*.*?\*/)|(/\*.*)", RegexOptions.Singleline);
+            //range.SetStyle(GreenStyle, @"(/\*.*?\*/)|(.*\*/)", RegexOptions.Singleline | RegexOptions.RightToLeft);
+            
+            // string highlighting
+            range.SetStyle(StringStyle, "(\".*?\")|(\".*)", RegexOptions.Singleline);
+
+            // key words
+            range.SetStyle(StringStyle, "()", RegexOptions.Singleline);
         }
     }
 }
