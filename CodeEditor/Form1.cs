@@ -169,27 +169,50 @@ namespace CodeEditor
         public Style GreenStyle = new TextStyle(Brushes.Green, null, FontStyle.Bold);
         public Style KeyWordStyle = new TextStyle(Brushes.Blue, null, FontStyle.Bold);
         public Style StringStyle = new TextStyle(Brushes.Red, null, FontStyle.Bold);
-        //private bool multilineCommand;
+        public Style BrownStyle = new TextStyle(Brushes.Brown, null, FontStyle.Bold);
+        public Style PurpleStyle = new TextStyle(Brushes.Purple, null, FontStyle.Bold);
+        public Style NumberStyle = new TextStyle(Brushes.Olive, null, FontStyle.Regular);
 
+        //private bool multilineCommand;
+        
+
+        
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
             Range range = (sender as FastColoredTextBox).VisibleRange;
-            //clear style of changed range
-            range.ClearStyle(GreenStyle, StringStyle);
-            //comment highlighting
-            //e.ChangedRange.SetStyle(GreenStyle, @"//.*$", RegexOptions.Multiline);
-            //e.ChangedRange.SetStyle(GreenStyle, @"/\*.*", RegexOptions.Multiline);
             
-
+            //clear style of changed range
+            range.ClearStyle(GreenStyle, StringStyle, KeyWordStyle);
+            
+            //comment highlighting
             range.SetStyle(GreenStyle, @"//.*$", RegexOptions.Multiline);
             range.SetStyle(GreenStyle, @"(/\*.*?\*/)|(/\*.*)", RegexOptions.Singleline);
             //range.SetStyle(GreenStyle, @"(/\*.*?\*/)|(.*\*/)", RegexOptions.Singleline | RegexOptions.RightToLeft);
             
             // string highlighting
-            range.SetStyle(StringStyle, "(\".*?\")|(\".*)", RegexOptions.Singleline);
+            range.SetStyle(StringStyle, "(\'.*?\')|(\'.*)", RegexOptions.Singleline);
 
             // key words
-            range.SetStyle(StringStyle, "()", RegexOptions.Singleline);
+            range.SetStyle(KeyWordStyle, @"\b((?i)((REPEAT)|(END_REPEAT)|(IF)|(ELSIF)|(ELSE)|(THEN)|(EXIT)|(END_IF)|(WHILE)|(DO)|(END_WHILE)|(FOR)|(BY)|(DO)|(END_FOR)|(CASE)|(END_CASE)|(OF)))\b", RegexOptions.Singleline);
+
+            
+            // bool
+            range.SetStyle(NumberStyle, @"\b((?i)(TRUE|FALSE))\b", RegexOptions.Singleline);
+            // numbers
+            range.SetStyle(NumberStyle, @"(-?\d+(\.\d+)?)");
+
+            // TIME
+            // duration of time time
+            range.SetStyle(NumberStyle, @"(?i)((T|TIME)#\d+(d|h|s|(ms)|m)((\d+)(d|h|(ms)|s|m)){0,4})");
+            // calendar date
+            range.SetStyle(NumberStyle, @"(?i)((T|TIME)#\d+(d|h|s|(ms)|m)((\d+)(d|h|(ms)|s|m)){0,4})");
+            // time of day
+            range.SetStyle(NumberStyle, @"(?i)(TDD|TIME_OF_DAY)#(\d\d):(\d\d):(\d\d)(.(\d\d))?");
+            //date and time of day
+            range.SetStyle(NumberStyle, @"(?i)(DT|DATE_AND_TIME)#(\d+)-(\d\d)-(\d\d)-((\d\d):(\d\d):(\d\d)(.(\d+))?)");
+
+
+
         }
     }
 }
