@@ -66,7 +66,7 @@ namespace CodeEditor
                 this.Text = openFileDialog.FileName;
             }
         }
-        
+
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -109,7 +109,7 @@ namespace CodeEditor
             // new color choosing dialog
             ColorDialog cd = new ColorDialog();
             // if after showing dialog, user clicked ok
-            if(cd.ShowDialog() == DialogResult.OK)
+            if (cd.ShowDialog() == DialogResult.OK)
             {
                 fastColoredTextBox1.BackColor = cd.Color;
             }
@@ -153,53 +153,44 @@ namespace CodeEditor
             fastColoredTextBox1.Redo();
         }
 
-        
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void fastColoredTextBox1_Load(object sender, EventArgs e)
-        {
-
-        }
-
         // Style
-        public Style GreenStyle = new TextStyle(Brushes.Green, null, FontStyle.Bold);
+        public Style commentStyle = new TextStyle(Brushes.Green, null, FontStyle.Bold);
         public Style KeyWordStyle = new TextStyle(Brushes.Blue, null, FontStyle.Bold);
         public Style StringStyle = new TextStyle(Brushes.Red, null, FontStyle.Bold);
-        public Style BrownStyle = new TextStyle(Brushes.Brown, null, FontStyle.Bold);
         public Style PurpleStyle = new TextStyle(Brushes.Purple, null, FontStyle.Bold);
         public Style NumberStyle = new TextStyle(Brushes.Olive, null, FontStyle.Regular);
+        public Style OperatorStyle = new TextStyle(Brushes.MidnightBlue, null, FontStyle.Regular);
+        public Style DataTypeStyle = new TextStyle(Brushes.SaddleBrown, null, FontStyle.Regular);
 
         //private bool multilineCommand;
-        
 
-        
+
+
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
             Range range = (sender as FastColoredTextBox).VisibleRange;
-            
+
             //clear style of changed range
-            range.ClearStyle(GreenStyle, StringStyle, KeyWordStyle);
-            
+            range.ClearStyle(commentStyle, StringStyle, KeyWordStyle);
+
             //comment highlighting
-            range.SetStyle(GreenStyle, @"//.*$", RegexOptions.Multiline);
-            range.SetStyle(GreenStyle, @"(/\*.*?\*/)|(/\*.*)", RegexOptions.Singleline);
+            range.SetStyle(commentStyle, @"//.*$", RegexOptions.Multiline);
+            range.SetStyle(commentStyle, @"(/\*.*?\*/)|(/\*.*)", RegexOptions.Singleline);
+            range.SetStyle(commentStyle, @"(\(\*.*?\*\))|(\(\*.*)", RegexOptions.Singleline);
             //range.SetStyle(GreenStyle, @"(/\*.*?\*/)|(.*\*/)", RegexOptions.Singleline | RegexOptions.RightToLeft);
-            
+
             // string highlighting
             range.SetStyle(StringStyle, "(\'.*?\')|(\'.*)", RegexOptions.Singleline);
 
             // key words
-            range.SetStyle(KeyWordStyle, @"\b((?i)((REPEAT)|(END_REPEAT)|(IF)|(ELSIF)|(ELSE)|(THEN)|(EXIT)|(END_IF)|(WHILE)|(DO)|(END_WHILE)|(FOR)|(BY)|(DO)|(END_FOR)|(CASE)|(END_CASE)|(OF)))\b", RegexOptions.Singleline);
+            range.SetStyle(KeyWordStyle, @"\b((?i)((REPEAT)|(END_REPEAT)|(IF)|(ELSIF)|(ELSE)|(THEN)|(EXIT)|(END_IF)|(WHILE)|(DO)|(END_WHILE)|(FOR)|TO|(BY)|(DO)|(END_FOR)|(CASE)|(END_CASE)|(OF)))\b", RegexOptions.Singleline);
 
-            
+
             // bool
             range.SetStyle(NumberStyle, @"\b((?i)(TRUE|FALSE))\b", RegexOptions.Singleline);
             // numbers
-            range.SetStyle(NumberStyle, @"(-?\d+(\.\d+)?)");
+            range.SetStyle(NumberStyle, @"\b(\d+(\.\d+)?)\b");
+            range.SetStyle(NumberStyle, @"(-\d+)");
 
             // TIME
             // duration of time time
@@ -211,7 +202,26 @@ namespace CodeEditor
             //date and time of day
             range.SetStyle(NumberStyle, @"(?i)(DT|DATE_AND_TIME)#(\d+)-(\d\d)-(\d\d)-((\d\d):(\d\d):(\d\d)(.(\d+))?)");
 
+            // data types style
+            range.SetStyle(DataTypeStyle, @"\b((?i)(SINT|INT|DINT|LINT|USINT|UINT|LDINT|ULINT|REAL|LREAL|TIME|DATE|TIME_OF_DAY|DATE_AND_TIME|STRING|BOOL|BYTE|WORD|DWORD|LWORD))\b", RegexOptions.Singleline);
 
+            // operators and ; : [] ()
+            range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\[|\]))", RegexOptions.Singleline);
+
+
+
+        }
+
+        private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (fastColoredTextBox1.WordWrap == false)
+            {
+                fastColoredTextBox1.WordWrap = true;
+            }
+            else
+            {
+                fastColoredTextBox1.WordWrap = false;
+            } 
 
         }
     }
