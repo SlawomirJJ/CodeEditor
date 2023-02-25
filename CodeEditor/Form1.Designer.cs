@@ -1,4 +1,13 @@
-﻿namespace CodeEditor
+﻿using System.Reflection;
+using System.Windows.Forms;
+using FastColoredTextBoxNS;
+using System.Drawing;
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace CodeEditor
 {
     partial class Form1
     {
@@ -49,6 +58,7 @@
             this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wordWrapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fastColoredTextBox1 = new FastColoredTextBoxNS.FastColoredTextBox();
+            this.autocompleteMenu1 = new AutocompleteMenuNS.AutocompleteMenu();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fastColoredTextBox1)).BeginInit();
             this.SuspendLayout();
@@ -218,6 +228,7 @@
         '\"',
         '\'',
         '\''};
+            this.autocompleteMenu1.SetAutocompleteMenu(this.fastColoredTextBox1, this.autocompleteMenu1);
             this.fastColoredTextBox1.AutoScrollMinSize = new System.Drawing.Size(35, 22);
             this.fastColoredTextBox1.AutoSize = true;
             this.fastColoredTextBox1.BackBrush = null;
@@ -226,7 +237,6 @@
             this.fastColoredTextBox1.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.fastColoredTextBox1.DescriptionFile = "";
             this.fastColoredTextBox1.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
-            this.fastColoredTextBox1.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.fastColoredTextBox1.IsReplaceMode = false;
             this.fastColoredTextBox1.Location = new System.Drawing.Point(0, 36);
             this.fastColoredTextBox1.Name = "fastColoredTextBox1";
@@ -238,7 +248,67 @@
             this.fastColoredTextBox1.TabIndex = 2;
             this.fastColoredTextBox1.WordWrapIndent = 3;
             this.fastColoredTextBox1.Zoom = 100;
+            this.fastColoredTextBox1.ToolTipNeeded += new System.EventHandler<FastColoredTextBoxNS.ToolTipNeededEventArgs>(this.fastColoredTextBox1_ToolTipNeeded);
             this.fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.fastColoredTextBox1_TextChanged);
+            this.fastColoredTextBox1.Load += new System.EventHandler(this.fastColoredTextBox1_Load);
+            //this.fastColoredTextBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.fastColoredTextBox1_KeyDown);
+            // 
+            // autocompleteMenu1
+            // 
+            this.autocompleteMenu1.AllowsTabKey = true;
+            this.autocompleteMenu1.Colors = ((AutocompleteMenuNS.Colors)(resources.GetObject("autocompleteMenu1.Colors")));
+            this.autocompleteMenu1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+            this.autocompleteMenu1.ImageList = null;
+            this.autocompleteMenu1.Items = new string[] {
+        "REPEAT",
+        "END_REPEAT",
+        "IF",
+        "ELSIF",
+        "ELSE",
+        "THEN",
+        "EXIT",
+        "END_IF",
+        "WHILE",
+        "END_WHILE",
+        "FOR",
+        "TO",
+        "BY",
+        "DO",
+        "END_FOR",
+        "CASE",
+        "END_CASE",
+        "OF",
+        "SINT",
+        "INT",
+        "DINT",
+        "LINT",
+        "USINT",
+        "UINT",
+        "LDINT",
+        "ULINT",
+        "REAL",
+        "LREAL",
+        "TIME",
+        "DATE",
+        "TIME_OF_DAY",
+        "DATE_AND_TIME",
+        "STRING",
+        "BOOL",
+        "BYTE",
+        "WORD",
+        "DWORD",
+        "LWORD",
+        "TRUE",
+        "FALSE",
+        "T#0d0h0m0s0ms",
+        "Time#0d0h0m0s0ms",
+        "D#0000-00-00",
+        "DATE#2000-00-00",
+        "TDD#00:00:00.00",
+        "TIME_OF_DAY#00:00:00.00",
+        "DT#0000-00-00:00:00:00.00",
+        "DATE_AND_TIME#0000-00-00-00:00:00.00"};
+            this.autocompleteMenu1.TargetControlWrapper = null;
             // 
             // Form1
             // 
@@ -251,6 +321,8 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.Text = "NoteCode";
+            this.Load += new System.EventHandler(this.Form1_Load);
+            //this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.fastColoredTextBox1_KeyDown);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fastColoredTextBox1)).EndInit();
@@ -279,6 +351,8 @@
         private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
         private FastColoredTextBoxNS.FastColoredTextBox fastColoredTextBox1;
         private System.Windows.Forms.ToolStripMenuItem wordWrapToolStripMenuItem;
+        private AutocompleteMenuNS.AutocompleteMenu autocompleteMenu1;
     }
+    
 }
 

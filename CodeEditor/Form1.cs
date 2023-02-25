@@ -12,6 +12,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using FastColoredTextBoxNS;
 
+
 namespace CodeEditor
 {
     public partial class Form1 : Form
@@ -169,7 +170,7 @@ namespace CodeEditor
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
             Range range = (sender as FastColoredTextBox).VisibleRange;
-
+            fastColoredTextBox1.Focus(); // ??????????????????
             //clear style of changed range
             range.ClearStyle(commentStyle, StringStyle, KeyWordStyle);
 
@@ -196,7 +197,7 @@ namespace CodeEditor
             // duration of time time
             range.SetStyle(NumberStyle, @"(?i)((T|TIME)#\d+(d|h|s|(ms)|m)((\d+)(d|h|(ms)|s|m)){0,4})");
             // calendar date
-            range.SetStyle(NumberStyle, @"(?i)((T|TIME)#\d+(d|h|s|(ms)|m)((\d+)(d|h|(ms)|s|m)){0,4})");
+            range.SetStyle(NumberStyle, @"(?i)((T|TIME)#(\d+)-(\d\d)-(\d\d)-(\d\d)?)");
             // time of day
             range.SetStyle(NumberStyle, @"(?i)(TDD|TIME_OF_DAY)#(\d\d):(\d\d):(\d\d)(.(\d\d))?");
             //date and time of day
@@ -205,12 +206,85 @@ namespace CodeEditor
             // data types style
             range.SetStyle(DataTypeStyle, @"\b((?i)(SINT|INT|DINT|LINT|USINT|UINT|LDINT|ULINT|REAL|LREAL|TIME|DATE|TIME_OF_DAY|DATE_AND_TIME|STRING|BOOL|BYTE|WORD|DWORD|LWORD))\b", RegexOptions.Singleline);
 
-            // operators and ; : [] ()
-            range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\[|\]))", RegexOptions.Singleline);
-
+            // operators and ; : [] () {}
+            range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\[|\]|\{|\}))", RegexOptions.Singleline);
 
 
         }
+        
+        /*
+        // Metoda wyświetlająca podpowiedzi kontekstowe
+        private List<string> GetAutoCompleteList(string word)
+        {
+            // Zdefiniuj listę słów kluczowych i typów
+            var keywords = new List<string>() { "if", "else", "while", "for", "int", "string", "bool", "float" };
+            var types = new List<string>() { "System", "Console", "Math", "DateTime" };
+            var results = new List<string>();
+
+            // Dodaj słowa kluczowe i typy
+            results.AddRange(keywords);
+            results.AddRange(types);
+
+            // Dodaj zdefiniowane zmienne i funkcje
+             //results.AddRange(myVariables);
+             //results.AddRange(myFunctions);
+
+            // Zwróć listę podpowiedzi, które pasują do wprowadzonego słowa
+            return results.Where(x => x.StartsWith(word)).ToList();
+        }   */
+
+
+        /*
+        private void fastColoredTextBox1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Space && e.Modifiers == Keys.Control)
+            {
+                e.IsInputKey = true;
+
+                AutocompleteMenu popupMenu = new AutocompleteMenu(fastColoredTextBox1);
+                popupMenu.Items.SetAutocompleteItems(keywords);
+                popupMenu.SearchPattern = @"[\w\.]";
+                popupMenu.AllowTabKey = true;
+                popupMenu.MinFragmentLength = 2;
+                popupMenu.AppearInterval = 150;
+                popupMenu.Enabled = true;
+                popupMenu.Show(fastColoredTextBox1.PointToScreen(fastColoredTextBox1.SelectionStartPoint));
+            }
+        } */
+        // Obsługa zdarzenia PreviewKeyDown
+        /*
+        private void fastColoredTextBox1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            // Sprawdź, czy użytkownik nacisnął spacje lub kropkę
+            if (!(char.IsWhiteSpace((char)e.KeyCode) || e.KeyCode == Keys.OemPeriod))
+            {
+                // Pobierz aktualną pozycję kursora i wprowadzony tekst
+                var range = fastColoredTextBox1.Selection;
+                Place place = new Place(1, 0);
+                range.Start = range.Start - place;
+                range.End = range.End + new Place(text.Length, 0);
+                range.Text = text;
+
+
+                //var range = fastColoredTextBox1.SelectedText
+                //string text = range.Text;//   (@"\w").ToString();
+                //var range = fastColoredTextBox1.Selection;
+                //var text = range.GetFragment(@"\w").Text;
+                //var text = range.Text.Replace("\r\n", " ");
+
+                // Wywołaj metodę wyświetlającą podpowiedzi kontekstowe
+                var autoCompleteList = GetAutoCompleteList(text1);
+
+                // Jeśli istnieją podpowiedzi, wyświetl menu kontekstowe
+                if (autoCompleteList.Any())
+                {
+                    var menu = new AutocompleteMenu(fastColoredTextBox1);
+                    menu.Items.SetAutocompleteItems(autoCompleteList);
+                    menu.Show();
+                }
+            }
+        } */
+
 
         private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -224,5 +298,37 @@ namespace CodeEditor
             } 
 
         }
+
+        // ToolTip ????????????
+        private void fastColoredTextBox1_ToolTipNeeded(object sender, ToolTipNeededEventArgs e)
+        {
+
+        }
+        /*
+        private void fastColoredTextBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+            
+            if (e.KeyData == (Keys.K | Keys.Control))
+            {
+                AutocompleteSample AutocompleteSample1 = new AutocompleteSample();
+                AutocompleteSample1.fctb_KeyDown(sender,e);
+                /*
+                AutocompleteSample AutocompleteSample1 = new AutocompleteSample();
+                //forced show (MinFragmentLength will be ignored)               
+                AutocompleteSample1.popupMenu.Show(true);
+                e.Handled = true;   */
+        //    }
+       // }   */
+
+        private void fastColoredTextBox1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
+    
 }
