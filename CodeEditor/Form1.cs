@@ -28,7 +28,7 @@ namespace CodeEditor
             //new save file dialog
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             // filter
-            saveFileDialog.Filter = "Text File|*.txt|Any File|*.*";
+            saveFileDialog.Filter = "ST File|*.ST";
             // if after showing dialog, user clicked ok
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -53,7 +53,7 @@ namespace CodeEditor
         {
             // create new open file dialog
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "text File|*.txt|Any File|*.*";
+            openFileDialog.Filter = "ST File|*.ST|Any File|*.*";
             // if after showing dialog, clicked ok
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -168,7 +168,7 @@ namespace CodeEditor
 
 
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
-        {
+       {
             Range range = (sender as FastColoredTextBox).VisibleRange;
             fastColoredTextBox1.Focus(); // ??????????????????
             //clear style of changed range
@@ -184,7 +184,7 @@ namespace CodeEditor
             range.SetStyle(StringStyle, "(\'.*?\')|(\'.*)", RegexOptions.Singleline);
 
             // key words
-            range.SetStyle(KeyWordStyle, @"\b((?i)((REPEAT)|(END_REPEAT)|(IF)|(ELSIF)|(ELSE)|(THEN)|(EXIT)|(END_IF)|(WHILE)|(DO)|(END_WHILE)|(FOR)|TO|(BY)|(DO)|(END_FOR)|(CASE)|(END_CASE)|(OF)))\b", RegexOptions.Singleline);
+            range.SetStyle(KeyWordStyle, @"\b((?i)((REPEAT)|(END_REPEAT)|(UNTIL)|(IF)|(ELSIF)|(ELSE)|(THEN)|(EXIT)|(END_IF)|(WHILE)|(DO)|(END_WHILE)|(FOR)|TO|(BY)|(DO)|(END_FOR)|(CASE)|(END_CASE)|(OF)|(PROGRAM)||(VAR)|(END_VAR)|(ARRAY)|(CMD_TMR)|(IN)|(PT)|(EXIT)|(TYPE)|(END_TYPE)|()))\b", RegexOptions.Singleline);
 
 
             // bool
@@ -209,81 +209,18 @@ namespace CodeEditor
             // operators and ; : [] () {}
             range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\[|\]|\{|\}))", RegexOptions.Singleline);
 
+            // Code Folding
+            fastColoredTextBox1.CollapseBlock (fastColoredTextBox1.Selection.Start.iLine,
+               fastColoredTextBox1.Selection.End.iLine);
 
+            //clear folding markers of changed range
+            e.ChangedRange.ClearFoldingMarkers();
+            //set folding markers
+            e.ChangedRange.SetFoldingMarkers("{", "}");
+            e.ChangedRange.SetFoldingMarkers(@"#region\b", @"#endregion\b");
         }
+
         
-        /*
-        // Metoda wyświetlająca podpowiedzi kontekstowe
-        private List<string> GetAutoCompleteList(string word)
-        {
-            // Zdefiniuj listę słów kluczowych i typów
-            var keywords = new List<string>() { "if", "else", "while", "for", "int", "string", "bool", "float" };
-            var types = new List<string>() { "System", "Console", "Math", "DateTime" };
-            var results = new List<string>();
-
-            // Dodaj słowa kluczowe i typy
-            results.AddRange(keywords);
-            results.AddRange(types);
-
-            // Dodaj zdefiniowane zmienne i funkcje
-             //results.AddRange(myVariables);
-             //results.AddRange(myFunctions);
-
-            // Zwróć listę podpowiedzi, które pasują do wprowadzonego słowa
-            return results.Where(x => x.StartsWith(word)).ToList();
-        }   */
-
-
-        /*
-        private void fastColoredTextBox1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            if (e.KeyCode == Keys.Space && e.Modifiers == Keys.Control)
-            {
-                e.IsInputKey = true;
-
-                AutocompleteMenu popupMenu = new AutocompleteMenu(fastColoredTextBox1);
-                popupMenu.Items.SetAutocompleteItems(keywords);
-                popupMenu.SearchPattern = @"[\w\.]";
-                popupMenu.AllowTabKey = true;
-                popupMenu.MinFragmentLength = 2;
-                popupMenu.AppearInterval = 150;
-                popupMenu.Enabled = true;
-                popupMenu.Show(fastColoredTextBox1.PointToScreen(fastColoredTextBox1.SelectionStartPoint));
-            }
-        } */
-        // Obsługa zdarzenia PreviewKeyDown
-        /*
-        private void fastColoredTextBox1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            // Sprawdź, czy użytkownik nacisnął spacje lub kropkę
-            if (!(char.IsWhiteSpace((char)e.KeyCode) || e.KeyCode == Keys.OemPeriod))
-            {
-                // Pobierz aktualną pozycję kursora i wprowadzony tekst
-                var range = fastColoredTextBox1.Selection;
-                Place place = new Place(1, 0);
-                range.Start = range.Start - place;
-                range.End = range.End + new Place(text.Length, 0);
-                range.Text = text;
-
-
-                //var range = fastColoredTextBox1.SelectedText
-                //string text = range.Text;//   (@"\w").ToString();
-                //var range = fastColoredTextBox1.Selection;
-                //var text = range.GetFragment(@"\w").Text;
-                //var text = range.Text.Replace("\r\n", " ");
-
-                // Wywołaj metodę wyświetlającą podpowiedzi kontekstowe
-                var autoCompleteList = GetAutoCompleteList(text1);
-
-                // Jeśli istnieją podpowiedzi, wyświetl menu kontekstowe
-                if (autoCompleteList.Any())
-                {
-                    var menu = new AutocompleteMenu(fastColoredTextBox1);
-                    menu.Items.SetAutocompleteItems(autoCompleteList);
-                    menu.Show();
-                }
-            }
-        } */
 
 
         private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
@@ -304,21 +241,6 @@ namespace CodeEditor
         {
 
         }
-        /*
-        private void fastColoredTextBox1_KeyDown(object sender, KeyEventArgs e)
-        {
-            
-            if (e.KeyData == (Keys.K | Keys.Control))
-            {
-                AutocompleteSample AutocompleteSample1 = new AutocompleteSample();
-                AutocompleteSample1.fctb_KeyDown(sender,e);
-                /*
-                AutocompleteSample AutocompleteSample1 = new AutocompleteSample();
-                //forced show (MinFragmentLength will be ignored)               
-                AutocompleteSample1.popupMenu.Show(true);
-                e.Handled = true;   */
-        //    }
-       // }   */
 
         private void fastColoredTextBox1_Load(object sender, EventArgs e)
         {
@@ -327,6 +249,65 @@ namespace CodeEditor
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
+        }
+
+        private void openFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            FolderBrowserDialog folderBrowserDialog1 = new FolderBrowserDialog();
+            folderBrowserDialog1.ShowDialog();
+            Cursor.Current = Cursors.WaitCursor;
+            tree.Nodes.Clear();
+            foreach (var item in Directory.GetDirectories(folderBrowserDialog1.SelectedPath))
+            {
+                DirectoryInfo directoryInfo = new DirectoryInfo(item);
+                var node = tree.Nodes.Add(directoryInfo.Name, directoryInfo.Name,0);
+                node.Tag = directoryInfo;
+            }
+
+            foreach (var item in Directory.GetFiles(folderBrowserDialog1.SelectedPath))
+            {
+                FileInfo fileInfo = new FileInfo(item);
+                var node = tree.Nodes.Add(fileInfo.Name, fileInfo.Name, 1);
+                node.Tag = fileInfo;
+            }
+            Cursor.Current = Cursors.Default;
+        }
+
+        private void tree_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
+        }
+
+        private void tree_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if ((e.Node.Tag == null))
+            {
+                // return
+            }
+            else if (e.Node.Tag.GetType() == typeof(DirectoryInfo))
+            {
+                // open folder
+                e.Node.Nodes.Clear();
+                foreach (var item in Directory.GetDirectories(((DirectoryInfo)e.Node.Tag).FullName))
+                {
+                    DirectoryInfo directoryInfo = new DirectoryInfo(item);
+                    var node = e.Node.Nodes.Add(directoryInfo.Name, directoryInfo.Name, 0, 0);
+                    node.Tag = directoryInfo;
+                }
+                foreach (var item in Directory.GetFiles(((DirectoryInfo)e.Node.Tag).FullName))
+                {
+                    FileInfo fileInfo = new FileInfo(item);
+                    var node = e.Node.Nodes.Add(fileInfo.Name, fileInfo.Name, 0, 0);
+                    node.Tag = fileInfo;
+                }
+            }
+            else
+            {
+                //open file
+                fastColoredTextBox1.Text = File.ReadAllText(((FileInfo)e.Node.Tag).FullName);
+            }
 
         }
     }
