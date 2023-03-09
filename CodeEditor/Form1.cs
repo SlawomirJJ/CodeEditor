@@ -11,11 +11,11 @@ using System.Windows.Forms;
 using System.IO;
 using System.Text.RegularExpressions;
 using FastColoredTextBoxNS;
-
+using Bunifu.Utils;
 
 namespace CodeEditor
 {
-    public partial class Form1 : Form
+    public partial class Form1 : BunifuForm
     {
         public Form1()
         {
@@ -310,6 +310,17 @@ namespace CodeEditor
             }
 
         }
+
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void btnMin_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
     }
-    
+
 }
