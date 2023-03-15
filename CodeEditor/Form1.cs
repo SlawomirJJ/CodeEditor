@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using FastColoredTextBoxNS;
 using Bunifu.Framework.UI;
 
+
 namespace CodeEditor
 {
     public partial class Form1 : Form
