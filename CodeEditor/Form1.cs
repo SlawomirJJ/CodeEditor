@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Text.RegularExpressions;
 using FastColoredTextBoxNS;
-
+using Bunifu.Framework.UI;
 
 namespace CodeEditor
 {
@@ -73,7 +73,7 @@ namespace CodeEditor
         {
             OpenDlg();
         }
-
+        
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -85,11 +85,14 @@ namespace CodeEditor
             }
             catch
             {
-                OpenDlg();
+
             }
+                
+            
+ 
 
         }
-
+        
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -256,23 +259,26 @@ namespace CodeEditor
         {
 
             FolderBrowserDialog folderBrowserDialog1 = new FolderBrowserDialog();
-            folderBrowserDialog1.ShowDialog();
             Cursor.Current = Cursors.WaitCursor;
             tree.Nodes.Clear();
-            foreach (var item in Directory.GetDirectories(folderBrowserDialog1.SelectedPath))
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
-                DirectoryInfo directoryInfo = new DirectoryInfo(item);
-                var node = tree.Nodes.Add(directoryInfo.Name, directoryInfo.Name,0);
-                node.Tag = directoryInfo;
-            }
+                foreach (var item in Directory.GetDirectories(folderBrowserDialog1.SelectedPath))
+                {
+                    DirectoryInfo directoryInfo = new DirectoryInfo(item);
+                    var node = tree.Nodes.Add(directoryInfo.Name, directoryInfo.Name, 0);
+                    node.Tag = directoryInfo;
+                }
 
-            foreach (var item in Directory.GetFiles(folderBrowserDialog1.SelectedPath))
-            {
-                FileInfo fileInfo = new FileInfo(item);
-                var node = tree.Nodes.Add(fileInfo.Name, fileInfo.Name, 1);
-                node.Tag = fileInfo;
+                foreach (var item in Directory.GetFiles(folderBrowserDialog1.SelectedPath))
+                {
+                    FileInfo fileInfo = new FileInfo(item);
+                    var node = tree.Nodes.Add(fileInfo.Name, fileInfo.Name, 1);
+                    node.Tag = fileInfo;
+                }
+                Cursor.Current = Cursors.Default;
             }
-            Cursor.Current = Cursors.Default;
+               
         }
 
         private void tree_AfterSelect(object sender, TreeViewEventArgs e)
@@ -302,12 +308,18 @@ namespace CodeEditor
                     var node = e.Node.Nodes.Add(fileInfo.Name, fileInfo.Name, 0, 0);
                     node.Tag = fileInfo;
                 }
+                e.Node.Expand();
             }
             else
             {
                 //open file
                 fastColoredTextBox1.Text = File.ReadAllText(((FileInfo)e.Node.Tag).FullName);
             }
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
 
         }
     }
