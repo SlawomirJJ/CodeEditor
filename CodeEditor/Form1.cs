@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Text.RegularExpressions;
 using FastColoredTextBoxNS;
-using Bunifu.Framework.UI;
+
 
 
 namespace CodeEditor

@@ -74,12 +74,13 @@ namespace CodeEditor
             this.fileToolStripMenuItem,
             this.editToolStripMenuItem,
             this.settingsToolStripMenuItem});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Location = new System.Drawing.Point(1, 45);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 1, 0, 1);
             this.menuStrip1.Size = new System.Drawing.Size(533, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
+
             // 
             // fileToolStripMenuItem
             // 
@@ -249,14 +250,15 @@ namespace CodeEditor
             this.fastColoredTextBox1.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.fastColoredTextBox1.DescriptionFile = "";
             this.fastColoredTextBox1.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.fastColoredTextBox1.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.fastColoredTextBox1.IsReplaceMode = false;
-            this.fastColoredTextBox1.Location = new System.Drawing.Point(145, 23);
+            this.fastColoredTextBox1.Location = new System.Drawing.Point(145, 71);
             this.fastColoredTextBox1.Margin = new System.Windows.Forms.Padding(2);
             this.fastColoredTextBox1.Name = "fastColoredTextBox1";
             this.fastColoredTextBox1.Paddings = new System.Windows.Forms.Padding(0);
             this.fastColoredTextBox1.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
             this.fastColoredTextBox1.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("fastColoredTextBox1.ServiceColors")));
-            this.fastColoredTextBox1.Size = new System.Drawing.Size(389, 268);
+            this.fastColoredTextBox1.Size = new System.Drawing.Size(389, 220);
             this.fastColoredTextBox1.SourceTextBox = this.fastColoredTextBox1;
             this.fastColoredTextBox1.TabIndex = 2;
             this.fastColoredTextBox1.WordWrapIndent = 3;
@@ -329,10 +331,10 @@ namespace CodeEditor
             this.tree.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.tree.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.tree.ForeColor = System.Drawing.SystemColors.MenuText;
-            this.tree.Location = new System.Drawing.Point(0, 23);
+            this.tree.Location = new System.Drawing.Point(0, 71);
             this.tree.Margin = new System.Windows.Forms.Padding(2);
             this.tree.Name = "tree";
-            this.tree.Size = new System.Drawing.Size(148, 269);
+            this.tree.Size = new System.Drawing.Size(148, 221);
             this.tree.TabIndex = 4;
             this.tree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tree_AfterSelect);
             this.tree.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tree_NodeMouseDoubleClick);
@@ -345,7 +347,7 @@ namespace CodeEditor
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Info;
             this.ClientSize = new System.Drawing.Size(533, 292);
@@ -359,6 +361,9 @@ namespace CodeEditor
             this.Text = "STNote";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.Controls.SetChildIndex(this.menuStrip1, 0);
+            this.Controls.SetChildIndex(this.fastColoredTextBox1, 0);
+            this.Controls.SetChildIndex(this.tree, 0);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fastColoredTextBox1)).EndInit();
