@@ -34,7 +34,7 @@ namespace CodeEditor
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
                 StreamWriter sw = new StreamWriter(saveFileDialog.FileName);
-                sw.Write(fastColoredTextBox1.Text);
+                //sw.Write(fastColoredTextBox1.Text);
                 sw.Close();
             }
         }
@@ -46,7 +46,7 @@ namespace CodeEditor
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fastColoredTextBox1.Text = "";
+            //fastColoredTextBox1.Text = "";
         }
 
         // method, to open file
@@ -61,7 +61,7 @@ namespace CodeEditor
                 // open file
                 StreamReader sr = new StreamReader(openFileDialog.FileName);
                 // place file text to text box
-                fastColoredTextBox1.Text = sr.ReadToEnd();
+                //fastColoredTextBox1.Text = sr.ReadToEnd();
                 // close file
                 sr.Close();
                 // text of this window = path of currently opened file
@@ -81,7 +81,7 @@ namespace CodeEditor
             {
                 // save file
                 StreamWriter sw = new StreamWriter(this.Text);
-                sw.WriteLine(fastColoredTextBox1.Text);
+                ///sw.WriteLine(fastColoredTextBox1.Text);
                 sw.Close();
             }
             catch
@@ -106,7 +106,7 @@ namespace CodeEditor
 
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fastColoredTextBox1.Paste();
+            //fastColoredTextBox1.Paste();
         }
 
         private void backgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -116,7 +116,7 @@ namespace CodeEditor
             // if after showing dialog, user clicked ok
             if (cd.ShowDialog() == DialogResult.OK)
             {
-                fastColoredTextBox1.BackColor = cd.Color;
+                //fastColoredTextBox1.BackColor = cd.Color;
             }
         }
 
@@ -127,7 +127,7 @@ namespace CodeEditor
             // if after showing dialog, user clicked ok
             if (cd.ShowDialog() == DialogResult.OK)
             {
-                fastColoredTextBox1.ForeColor = cd.Color;
+                ///fastColoredTextBox1.ForeColor = cd.Color;
             }
         }
 
@@ -139,23 +139,23 @@ namespace CodeEditor
             if (fd.ShowDialog() == DialogResult.OK)
             {
                 // set background color to text box
-                fastColoredTextBox1.Font = fd.Font;
+                //fastColoredTextBox1.Font = fd.Font;
             }
         }
 
         private void cutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fastColoredTextBox1.Cut();
+           // /fastColoredTextBox1.Cut();
         }
 
         private void undoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fastColoredTextBox1.Undo();
+           /// fastColoredTextBox1.Undo();
         }
 
         private void redoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fastColoredTextBox1.Redo();
+            ////fastColoredTextBox1.Redo();
         }
 
         // Style
@@ -174,7 +174,7 @@ namespace CodeEditor
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
        {
             Range range = (sender as FastColoredTextBox).VisibleRange;
-            fastColoredTextBox1.Focus(); // ??????????????????
+            ////fastColoredTextBox1.Focus(); // ??????????????????
             //clear style of changed range
             range.ClearStyle(commentStyle, StringStyle, KeyWordStyle);
 
@@ -214,8 +214,8 @@ namespace CodeEditor
             range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\[|\]|\{|\}))", RegexOptions.Singleline);
 
             // Code Folding
-            fastColoredTextBox1.CollapseBlock (fastColoredTextBox1.Selection.Start.iLine,
-               fastColoredTextBox1.Selection.End.iLine);
+            //fastColoredTextBox1.CollapseBlock (fastColoredTextBox1.Selection.Start.iLine,
+               //fastColoredTextBox1.Selection.End.iLine);
 
             //clear folding markers of changed range
             e.ChangedRange.ClearFoldingMarkers();
@@ -229,14 +229,23 @@ namespace CodeEditor
 
         private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (fastColoredTextBox1.WordWrap == false)
+            foreach (TabPage tabPage in tabPage.TabPages)
             {
-                fastColoredTextBox1.WordWrap = true;
+                var fastColoredTextBox = tabPage.Controls.OfType<FastColoredTextBox>().FirstOrDefault();
+                if (fastColoredTextBox != null)
+                {
+                    if (fastColoredTextBox.WordWrap == false)
+                    {
+                        fastColoredTextBox.WordWrap = true;
+                    }
+                    else
+                    {
+                        fastColoredTextBox.WordWrap = false;
+                    }
+                }
             }
-            else
-            {
-                fastColoredTextBox1.WordWrap = false;
-            } 
+
+              
 
         }
 
@@ -313,8 +322,28 @@ namespace CodeEditor
             }
             else
             {
-                //open file
-                fastColoredTextBox1.Text = File.ReadAllText(((FileInfo)e.Node.Tag).FullName);
+                // Tworzenie nowej zakładki
+                TabPage newTabPage = new TabPage();
+
+                // Tworzenie kontrolki FastColoredTextBox z plikiem
+                FastColoredTextBox fastColoredTextBox1 = new FastColoredTextBox();
+                fastColoredTextBox1.OpenFile(((FileInfo)e.Node.Tag).FullName);
+
+                // Ustawienie właściwości Tag na ścieżkę do pliku
+                fastColoredTextBox1.Tag = ((FileInfo)e.Node.Tag).FullName;
+
+                // Dodanie kontrolki FastColoredTextBox do nowej zakładki
+                newTabPage.Controls.Add(fastColoredTextBox1);
+
+                // Ustawienie tekstu zakładki na nazwę pliku
+                newTabPage.Text = Path.GetFileName(((FileInfo)e.Node.Tag).FullName);
+
+                // Dodanie nowej zakładki do kontroli TabControl
+                tabPage.TabPages.Add(newTabPage);
+
+                // Ustawienie nowej zakładki jako aktualnie wybranej
+                tabPage.SelectedTab = newTabPage;
+
             }
 
         }
@@ -329,6 +358,35 @@ namespace CodeEditor
             this.WindowState = FormWindowState.Minimized;
         }
 
+
+        private void tabPage1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Pobranie aktualnie wybranej zakładki
+            var selectedTab = tabPage.SelectedTab;
+            if (selectedTab != null && selectedTab.Controls.Count > 0)
+            {
+                var fastColoredTextBox = selectedTab.Controls[0] as FastColoredTextBox;
+                if (fastColoredTextBox != null)
+                {
+                    var filePath = fastColoredTextBox.Tag as string;
+                    if (filePath != null)
+                    {/*
+                        // Pobranie kontrolki FastColoredTextBox z wybranej zakładki
+                        FastColoredTextBox fastColoredTextBox1 = selectedTab.Controls.OfType<FastColoredTextBox>().FirstOrDefault();
+                        fastColoredTextBox1.Text = File.ReadAllText(filePath);  */
+                    }
+                }
+            }
+        }
+
+        private void tabPage_Deselected(object sender, TabControlEventArgs e)
+        {
+
+        }
     }
-    
 }
