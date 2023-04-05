@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Text.RegularExpressions;
 using FastColoredTextBoxNS;
-
+using CodeEditor.Properties;
 
 
 namespace CodeEditor
@@ -35,6 +35,10 @@ namespace CodeEditor
             {
                 StreamWriter sw = new StreamWriter(saveFileDialog.FileName);
                 //sw.Write(fastColoredTextBox1.Text);
+                // Ustawienie właściwości Tag na ścieżkę do pliku
+                TabPage SelectedTab = tabPage.SelectedTab;
+                SelectedTab.Tag = sw.ToString();
+                fastColoredTextBox1.Tag = sw.ToString();
                 sw.Close();
             }
         }
@@ -46,7 +50,56 @@ namespace CodeEditor
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //fastColoredTextBox1.Text = "";
+            // Tworzenie nowej zakładki
+            TabPage newTabPage = new TabPage();
+
+            // Tworzenie kontrolki FastColoredTextBox z plikiem
+            FastColoredTextBox fastColoredTextBox1 = new FastColoredTextBox();
+
+            // Dodanie kontrolki FastColoredTextBox do nowej zakładki
+            newTabPage.Controls.Add(fastColoredTextBox1);
+            AutocompleteMenuNS.AutocompleteMenu acm = new AutocompleteMenuNS.AutocompleteMenu();
+            acm.SetAutocompleteMenu(fastColoredTextBox1, acm);
+            acm.Items = this.autocompleteMenu1.Items;
+            acm.Colors = this.autocompleteMenu1.Colors;
+            acm.Font = this.autocompleteMenu1.Font;
+
+            // Dodanie nowej zakładki do kontroli TabControl
+            tabPage.TabPages.Add(newTabPage);
+
+            //nadanie nazwy
+            int k = 0;
+            int i = 0;
+            while (true)
+            {
+                k = 0;
+                for (int j = 0; j < tabPage.TabCount-1; j++)
+                {
+                    if (tabPage.TabPages[j].Text == "newFile" + (i + 1))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        k++;
+                    }                       
+                }
+                if (k == tabPage.TabCount - 1)
+                {
+                    newTabPage.Text = "newFile" + (i + 1);
+                    break;
+                }
+                i++;              
+            }
+
+            // Ustawienie nowej zakładki jako aktualnie wybranej
+            tabPage.SelectedTab = newTabPage;
+
+            //obsługa zdarzenia TextChanged
+            fastColoredTextBox1.TextChanged += new EventHandler<TextChangedEventArgs>(fastColoredTextBox1_TextChanged);
+            fastColoredTextBox1.Dock = DockStyle.Fill;
+            fastColoredTextBox1.AutoCompleteBrackets = true;
+
         }
 
         // method, to open file
@@ -77,23 +130,41 @@ namespace CodeEditor
         
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
-            {
-                // save file
-                StreamWriter sw = new StreamWriter(this.Text);
-                ///sw.WriteLine(fastColoredTextBox1.Text);
-                sw.Close();
-            }
-            catch
-            {
+            TabPage SelectedTab = tabPage.SelectedTab;
+            var selectedFastColoredTextBox = SelectedTab.Controls.OfType<FastColoredTextBox>().FirstOrDefault();
 
+            if (SelectedTab.Tag != null)
+            {
+                File.WriteAllText(SelectedTab.Tag.ToString(), selectedFastColoredTextBox.Text);
+            }
+            else
+            {
+                SaveDlg();
             }
                 
             
  
 
         }
-        
+
+        private void saveAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < tabPage.TabCount; i++)
+            {
+                TabPage SelectedTab = tabPage.TabPages[i];
+                FastColoredTextBox selectedFastColoredTextBox = SelectedTab.Controls.OfType<FastColoredTextBox>().FirstOrDefault();
+
+                if (SelectedTab.Tag != null)
+                {
+                    File.WriteAllText(SelectedTab.Tag.ToString(), selectedFastColoredTextBox.Text);
+                }
+                else
+                {
+                    SaveDlg();
+                }
+            }
+        }
+
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -168,60 +239,69 @@ namespace CodeEditor
         public Style DataTypeStyle = new TextStyle(Brushes.SaddleBrown, null, FontStyle.Regular);
 
         //private bool multilineCommand;
-
-
+        /*
+        private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ColorizeText(sender, e);
+        }       */
 
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
        {
-            Range range = (sender as FastColoredTextBox).VisibleRange;
-            ////fastColoredTextBox1.Focus(); // ??????????????????
-            //clear style of changed range
-            range.ClearStyle(commentStyle, StringStyle, KeyWordStyle);
-
-            //comment highlighting
-            range.SetStyle(commentStyle, @"//.*$", RegexOptions.Multiline);
-            range.SetStyle(commentStyle, @"(/\*.*?\*/)|(/\*.*)", RegexOptions.Singleline);
-            range.SetStyle(commentStyle, @"(\(\*.*?\*\))|(\(\*.*)", RegexOptions.Singleline);
-            //range.SetStyle(GreenStyle, @"(/\*.*?\*/)|(.*\*/)", RegexOptions.Singleline | RegexOptions.RightToLeft);
-
-            // string highlighting
-            range.SetStyle(StringStyle, "(\'.*?\')|(\'.*)", RegexOptions.Singleline);
-
-            // key words
-            range.SetStyle(KeyWordStyle, @"\b((?i)((REPEAT)|(END_REPEAT)|(UNTIL)|(IF)|(ELSIF)|(ELSE)|(THEN)|(EXIT)|(END_IF)|(WHILE)|(DO)|(END_WHILE)|(FOR)|TO|(BY)|(DO)|(END_FOR)|(CASE)|(END_CASE)|(OF)|(PROGRAM)||(VAR)|(END_VAR)|(ARRAY)|(CMD_TMR)|(IN)|(PT)|(EXIT)|(TYPE)|(END_TYPE)|()))\b", RegexOptions.Singleline);
+            FastColoredTextBox textBox = sender as FastColoredTextBox;
+            if (textBox != null)
+            {
 
 
-            // bool
-            range.SetStyle(NumberStyle, @"\b((?i)(TRUE|FALSE))\b", RegexOptions.Singleline);
-            // numbers
-            range.SetStyle(NumberStyle, @"\b(\d+(\.\d+)?)\b");
-            range.SetStyle(NumberStyle, @"(-\d+)");
+                Range range = (sender as FastColoredTextBox).VisibleRange;
+                ////fastColoredTextBox1.Focus(); // ??????????????????
+                //clear style of changed range
+                range.ClearStyle(commentStyle, StringStyle, KeyWordStyle);
 
-            // TIME
-            // duration of time time
-            range.SetStyle(NumberStyle, @"(?i)((T|TIME)#\d+(d|h|s|(ms)|m)((\d+)(d|h|(ms)|s|m)){0,4})");
-            // calendar date
-            range.SetStyle(NumberStyle, @"(?i)((T|TIME)#(\d+)-(\d\d)-(\d\d)-(\d\d)?)");
-            // time of day
-            range.SetStyle(NumberStyle, @"(?i)(TDD|TIME_OF_DAY)#(\d\d):(\d\d):(\d\d)(.(\d\d))?");
-            //date and time of day
-            range.SetStyle(NumberStyle, @"(?i)(DT|DATE_AND_TIME)#(\d+)-(\d\d)-(\d\d)-((\d\d):(\d\d):(\d\d)(.(\d+))?)");
+                //comment highlighting
+                range.SetStyle(commentStyle, @"//.*$", RegexOptions.Multiline);
+                range.SetStyle(commentStyle, @"(/\*.*?\*/)|(/\*.*)", RegexOptions.Singleline);
+                range.SetStyle(commentStyle, @"(\(\*.*?\*\))|(\(\*.*)", RegexOptions.Singleline);
+                //range.SetStyle(GreenStyle, @"(/\*.*?\*/)|(.*\*/)", RegexOptions.Singleline | RegexOptions.RightToLeft);
 
-            // data types style
-            range.SetStyle(DataTypeStyle, @"\b((?i)(SINT|INT|DINT|LINT|USINT|UINT|LDINT|ULINT|REAL|LREAL|TIME|DATE|TIME_OF_DAY|DATE_AND_TIME|STRING|BOOL|BYTE|WORD|DWORD|LWORD))\b", RegexOptions.Singleline);
+                // string highlighting
+                range.SetStyle(StringStyle, "(\'.*?\')|(\'.*)", RegexOptions.Singleline);
 
-            // operators and ; : [] () {}
-            range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\[|\]|\{|\}))", RegexOptions.Singleline);
+                // key words
+                range.SetStyle(KeyWordStyle, @"\b((?i)((REPEAT)|(END_REPEAT)|(UNTIL)|(IF)|(ELSIF)|(ELSE)|(THEN)|(EXIT)|(END_IF)|(WHILE)|(DO)|(END_WHILE)|(FOR)|TO|(BY)|(DO)|(END_FOR)|(CASE)|(END_CASE)|(OF)|(PROGRAM)||(VAR)|(END_VAR)|(ARRAY)|(CMD_TMR)|(IN)|(PT)|(EXIT)|(TYPE)|(END_TYPE)|()))\b", RegexOptions.Singleline);
 
-            // Code Folding
-            //fastColoredTextBox1.CollapseBlock (fastColoredTextBox1.Selection.Start.iLine,
-               //fastColoredTextBox1.Selection.End.iLine);
 
-            //clear folding markers of changed range
-            e.ChangedRange.ClearFoldingMarkers();
-            //set folding markers
-            e.ChangedRange.SetFoldingMarkers("{", "}");
-            e.ChangedRange.SetFoldingMarkers(@"#region\b", @"#endregion\b");
+                // bool
+                range.SetStyle(NumberStyle, @"\b((?i)(TRUE|FALSE))\b", RegexOptions.Singleline);
+                // numbers
+                range.SetStyle(NumberStyle, @"\b(\d+(\.\d+)?)\b");
+                range.SetStyle(NumberStyle, @"(-\d+)");
+
+                // TIME
+                // duration of time time
+                range.SetStyle(NumberStyle, @"(?i)((T|TIME)#\d+(d|h|s|(ms)|m)((\d+)(d|h|(ms)|s|m)){0,4})");
+                // calendar date
+                range.SetStyle(NumberStyle, @"(?i)((T|TIME)#(\d+)-(\d\d)-(\d\d)-(\d\d)?)");
+                // time of day
+                range.SetStyle(NumberStyle, @"(?i)(TDD|TIME_OF_DAY)#(\d\d):(\d\d):(\d\d)(.(\d\d))?");
+                //date and time of day
+                range.SetStyle(NumberStyle, @"(?i)(DT|DATE_AND_TIME)#(\d+)-(\d\d)-(\d\d)-((\d\d):(\d\d):(\d\d)(.(\d+))?)");
+
+                // data types style
+                range.SetStyle(DataTypeStyle, @"\b((?i)(SINT|INT|DINT|LINT|USINT|UINT|LDINT|ULINT|REAL|LREAL|TIME|DATE|TIME_OF_DAY|DATE_AND_TIME|STRING|BOOL|BYTE|WORD|DWORD|LWORD))\b", RegexOptions.Singleline);
+
+                // operators and ; : [] () {}
+                range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\[|\]|\{|\}))", RegexOptions.Singleline);
+
+                // Code Folding
+                //fastColoredTextBox1.CollapseBlock (fastColoredTextBox1.Selection.Start.iLine,
+                //fastColoredTextBox1.Selection.End.iLine);
+
+                //clear folding markers of changed range
+                e.ChangedRange.ClearFoldingMarkers();
+                //set folding markers
+                e.ChangedRange.SetFoldingMarkers("{", "}");
+                e.ChangedRange.SetFoldingMarkers(@"#region\b", @"#endregion\b");
+            }
         }
 
         
@@ -331,6 +411,7 @@ namespace CodeEditor
 
                 // Ustawienie właściwości Tag na ścieżkę do pliku
                 fastColoredTextBox1.Tag = ((FileInfo)e.Node.Tag).FullName;
+                newTabPage.Tag = ((FileInfo)e.Node.Tag).FullName;
 
                 // Dodanie kontrolki FastColoredTextBox do nowej zakładki
                 newTabPage.Controls.Add(fastColoredTextBox1);
@@ -344,25 +425,80 @@ namespace CodeEditor
                 // Ustawienie nowej zakładki jako aktualnie wybranej
                 tabPage.SelectedTab = newTabPage;
 
+                //obsługa zdarzenia TextChanged
+                fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(fastColoredTextBox1_TextChanged);
+                fastColoredTextBox1.Dock = DockStyle.Fill;
+                fastColoredTextBox1.AutoCompleteBrackets = true;
+
+
+                // Przypisanie kontrolki autocompletemenu
+                //fastColoredTextBox1.au
+                
+                //AutocompleteMenu autocompleteMenu1 = new AutocompleteMenu(fastColoredTextBox1);
+                //autocompleteMenu1.SetAutocompleteItems(new List<string> { "item1", "item2", "item3" });
+
+                //autoCompleteMenu.Items. //.Items.AddRange(new string[] { "apple", "banana", "cherry" });
+
+             /*   autocompleteMenu1.Items = new string[] {
+        "REPEAT",
+        "END_REPEAT",
+        "IF",
+        "ELSIF",
+        "ELSE",
+        "THEN",
+        "EXIT",
+        "END_IF",
+        "WHILE",
+        "END_WHILE",
+        "FOR",
+        "TO",
+        "BY",
+        "DO",
+        "END_FOR",
+        "CASE",
+        "END_CASE",
+        "OF",
+        "SINT",
+        "INT",
+        "DINT",
+        "LINT",
+        "USINT",
+        "UINT",
+        "LDINT",
+        "ULINT",
+        "REAL",
+        "LREAL",
+        "TIME",
+        "DATE",
+        "TIME_OF_DAY",
+        "DATE_AND_TIME",
+        "STRING",
+        "BOOL",
+        "BYTE",
+        "WORD",
+        "DWORD",
+        "LWORD",
+        "TRUE",
+        "FALSE",
+        "T#0d0h0m0s0ms",
+        "Time#0d0h0m0s0ms",
+        "D#0000-00-00",
+        "DATE#2000-00-00",
+        "TDD#00:00:00.00",
+        "TIME_OF_DAY#00:00:00.00",
+        "DT#0000-00-00:00:00:00.00",
+        "DATE_AND_TIME#0000-00-00-00:00:00.00"};    */
+
+
+                //autocompleteMenu1.AutoPopup = true;
+                //autocompleteMenu1.AppearInterval = 500;
+                //autocompleteMenu1.MinFragmentLength = 2;
+                //autocompleteMenu1.SetAutocompleteMenu(this.fastColoredTextBox1, this.autocompleteMenu1);
+
             }
 
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void btnMin_Click(object sender, EventArgs e)
-        {
-            this.WindowState = FormWindowState.Minimized;
-        }
-
-
-        private void tabPage1_Click(object sender, EventArgs e)
-        {
-
-        }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -384,9 +520,8 @@ namespace CodeEditor
             }
         }
 
-        private void tabPage_Deselected(object sender, TabControlEventArgs e)
-        {
+        
 
-        }
+
     }
 }
