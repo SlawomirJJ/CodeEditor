@@ -18,6 +18,9 @@ namespace CodeEditor
 {
     public partial class Form1 : Form
     {
+        //private string closeButtonFullPath = @"D:\dokumenty\Informatyka\Praca magisterska\CodeEditor\img\closeBtn.png";
+        Image closeImage, closeImageAct;
+        //Image closeImage, closeImageAct;
         public Form1()
         {
             InitializeComponent();
@@ -91,6 +94,26 @@ namespace CodeEditor
                 }
                 i++;              
             }
+/*
+            // dodanie przycisku do zamykania zakładki //
+                // tworzenie przycisku zamykającego
+                int newTabPageIndex = newTabPage.TabIndex;
+                Button closeButton = new Button();
+                closeButton.Text = "x";
+                closeButton.Size = new Size(20, 20);
+            //closeButton.Location = new Point(tabPage.GetTabRect(newTabPageIndex).Right - closeButton.Width, tabPage.GetTabRect(newTabPageIndex).Top);
+            closeButton.Location = new Point(tabPage.Bounds.Right - closeButton.Width - 5, tabPage.Bounds.Top + 5);
+
+            closeButton.Tag = newTabPageIndex; // Przypisujemy tag z numerem indeksu zakładki
+
+                // Dodajemy przycisk zamykający do zakładki
+                tabPage.TabPages[newTabPageIndex].Controls.Add(closeButton);
+            closeButton.BringToFront();
+
+                // Dodajemy obsługę zdarzenia Click dla przycisku
+                closeButton.Click += new EventHandler(CloseTabButton_Click);
+        */
+
 
             // Ustawienie nowej zakładki jako aktualnie wybranej
             tabPage.SelectedTab = newTabPage;
@@ -101,7 +124,12 @@ namespace CodeEditor
             fastColoredTextBox1.AutoCompleteBrackets = true;
 
         }
-
+        private void CloseTabButton_Click(object sender, EventArgs e)
+        {
+            Button closeButton = (Button)sender;
+            int index = (int)closeButton.Tag;
+            tabPage.TabPages.RemoveAt(index);
+        }
         // method, to open file
         private void OpenDlg()
         {
@@ -223,17 +251,17 @@ namespace CodeEditor
         {
            /// fastColoredTextBox1.Undo();
         }
-
+        /*
         private void redoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ////fastColoredTextBox1.Redo();
-        }
+        }   */
 
         // Style
         public Style commentStyle = new TextStyle(Brushes.Green, null, FontStyle.Bold);
         public Style KeyWordStyle = new TextStyle(Brushes.Blue, null, FontStyle.Bold);
         public Style StringStyle = new TextStyle(Brushes.Red, null, FontStyle.Bold);
-        public Style PurpleStyle = new TextStyle(Brushes.Purple, null, FontStyle.Bold);
+        //public Style PurpleStyle = new TextStyle(Brushes.Purple, null, FontStyle.Bold);
         public Style NumberStyle = new TextStyle(Brushes.Olive, null, FontStyle.Regular);
         public Style OperatorStyle = new TextStyle(Brushes.MidnightBlue, null, FontStyle.Regular);
         public Style DataTypeStyle = new TextStyle(Brushes.SaddleBrown, null, FontStyle.Regular);
@@ -250,31 +278,30 @@ namespace CodeEditor
             FastColoredTextBox textBox = sender as FastColoredTextBox;
             if (textBox != null)
             {
-
-
                 Range range = (sender as FastColoredTextBox).VisibleRange;
-                ////fastColoredTextBox1.Focus(); // ??????????????????
                 //clear style of changed range
-                range.ClearStyle(commentStyle, StringStyle, KeyWordStyle);
+                range.ClearStyle(commentStyle, KeyWordStyle, StringStyle, NumberStyle, OperatorStyle, DataTypeStyle);
 
-                //comment highlighting
+                //comments
                 range.SetStyle(commentStyle, @"//.*$", RegexOptions.Multiline);
                 range.SetStyle(commentStyle, @"(/\*.*?\*/)|(/\*.*)", RegexOptions.Singleline);
                 range.SetStyle(commentStyle, @"(\(\*.*?\*\))|(\(\*.*)", RegexOptions.Singleline);
-                //range.SetStyle(GreenStyle, @"(/\*.*?\*/)|(.*\*/)", RegexOptions.Singleline | RegexOptions.RightToLeft);
 
-                // string highlighting
+                // strings
                 range.SetStyle(StringStyle, "(\'.*?\')|(\'.*)", RegexOptions.Singleline);
+                range.SetStyle(StringStyle, "(\".*?\")|(\".*)", RegexOptions.Singleline);
 
                 // key words
-                range.SetStyle(KeyWordStyle, @"\b((?i)((REPEAT)|(END_REPEAT)|(UNTIL)|(IF)|(ELSIF)|(ELSE)|(THEN)|(EXIT)|(END_IF)|(WHILE)|(DO)|(END_WHILE)|(FOR)|TO|(BY)|(DO)|(END_FOR)|(CASE)|(END_CASE)|(OF)|(PROGRAM)||(VAR)|(END_VAR)|(ARRAY)|(CMD_TMR)|(IN)|(PT)|(EXIT)|(TYPE)|(END_TYPE)|()))\b", RegexOptions.Singleline);
+                range.SetStyle(KeyWordStyle, @"\b((?i)((PROGRAM)|(END_PROGRAM)|(VAR)|(VAR_INPUT)|(VAR_OUTPUT)|(VAR_IN_OUT)|(VAR_EXTERNAL)|(VAR_GLOBAL)|(VAR_ACCESS)|(VAR_TEMP)|(VAR_CONFIG)|(END_VAR)|(RETAIN)|(NON_RETAIN)|(PROTECTED)|(PUBLIC)|(PRIVATE)|(INTERNAL)|(CONSTANT)|(IF)|(ELSIF)|(THEN)|(ELSE)|(END_IF)|(CASE)|(OF)|(END_CASE)|(FOR)|(TO)|(BY)|(DO)|(END_FOR)|(EXIT)|(RETURN)|(WHILE)|(END_WHILE)|(REPEAT)|(UNTIL)|(END_REPEAT)|(TYPE)|(END_TYPE)|(ARRAY)|(STRUCT)|(END_STRUCT)|(OVERLAP)|(AT)|(REF_TO)|(REF)|(FUNCTION)|(END_FUNCTION)|(FUNCTION_BLOCK)|(END_FUNCTION_BLOCK)|(CLASS)|(END_CLASS)|(FINAL)|(METHOD)|(END_METHOD)|(EXTENDS)|(OVERRIDE)|(ABSTRACT)|(THIS)|(SUPER)|(INTERFACE)|(END_INTERFACE)|(IMPLEMENTS)|(READ_WRITE)|(READ_ONLY)|(NAMESPACE)|(END_NAMESPACE)))\b", RegexOptions.Singleline);
 
+                ///         DATA TYPES      /// 
+                range.SetStyle(DataTypeStyle, @"\b((?i)((SINT)|(INT)|(DINT)|(LINT)|(USINT)|(UINT)|(UDINT)|(LDINT)|(ULINT)|(REAL)|(LREAL)|(TIME)|(DATE)|(TIME_OF_DAY)|(TOD)|(LTIME_OF_DAY)|(LTOD)|(DATE_AND_TIME)|(DT)|(LDATE_AND_TIME)|(LDT)||(STRING)|(BOOL)|(R_EDGE)|(F_EDGE)|(BYTE)|(WORD)|(DWORD)|(LWORD)|(LTIME)|(LDATE)|(WSTRING)|(CHAR)|(WCHAR)))\b", RegexOptions.Singleline);
 
                 // bool
                 range.SetStyle(NumberStyle, @"\b((?i)(TRUE|FALSE))\b", RegexOptions.Singleline);
                 // numbers
-                range.SetStyle(NumberStyle, @"\b(\d+(\.\d+)?)\b");
-                range.SetStyle(NumberStyle, @"(-\d+)");
+                range.SetStyle(NumberStyle, @"\b(\d+(\.\d+)?)\b", RegexOptions.Singleline);
+                range.SetStyle(NumberStyle, @"(\-(\d+))", RegexOptions.Singleline);
 
                 // TIME
                 // duration of time time
@@ -289,8 +316,9 @@ namespace CodeEditor
                 // data types style
                 range.SetStyle(DataTypeStyle, @"\b((?i)(SINT|INT|DINT|LINT|USINT|UINT|LDINT|ULINT|REAL|LREAL|TIME|DATE|TIME_OF_DAY|DATE_AND_TIME|STRING|BOOL|BYTE|WORD|DWORD|LWORD))\b", RegexOptions.Singleline);
 
-                // operators and ; : [] () {}
-                range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\[|\]|\{|\}))", RegexOptions.Singleline);
+                // operators and special characters
+                range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\.|,|\[|\]|\{|\}|#|\^|%))", RegexOptions.Singleline);
+                //range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\[|\]|\{|\}))", RegexOptions.Singleline);
 
                 // Code Folding
                 //fastColoredTextBox1.CollapseBlock (fastColoredTextBox1.Selection.Start.iLine,
@@ -329,11 +357,7 @@ namespace CodeEditor
 
         }
 
-        // ToolTip ????????????
-        private void fastColoredTextBox1_ToolTipNeeded(object sender, ToolTipNeededEventArgs e)
-        {
 
-        }
 
         private void fastColoredTextBox1_Load(object sender, EventArgs e)
         {
@@ -342,7 +366,18 @@ namespace CodeEditor
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            Size mysize = new System.Drawing.Size(20, 20); // co anh chen vao
+            Bitmap bt = new Bitmap(Properties.Resources.close);
+            // anh nay ban dau minh da them vao
+            Bitmap btm = new Bitmap(bt, mysize);
+            closeImageAct = btm;
+            //
+            //
+            Bitmap bt2 = new Bitmap(Properties.Resources.closeBlack);
+            // anh nay ban dau minh da them vao
+            Bitmap btm2 = new Bitmap(bt2, mysize);
+            closeImage = btm2;
+            tabPage.Padding = new Point(30);
         }
 
         private void openFolderToolStripMenuItem_Click(object sender, EventArgs e)
@@ -429,74 +464,7 @@ namespace CodeEditor
                 fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(fastColoredTextBox1_TextChanged);
                 fastColoredTextBox1.Dock = DockStyle.Fill;
                 fastColoredTextBox1.AutoCompleteBrackets = true;
-
-
-                // Przypisanie kontrolki autocompletemenu
-                //fastColoredTextBox1.au
-                
-                //AutocompleteMenu autocompleteMenu1 = new AutocompleteMenu(fastColoredTextBox1);
-                //autocompleteMenu1.SetAutocompleteItems(new List<string> { "item1", "item2", "item3" });
-
-                //autoCompleteMenu.Items. //.Items.AddRange(new string[] { "apple", "banana", "cherry" });
-
-             /*   autocompleteMenu1.Items = new string[] {
-        "REPEAT",
-        "END_REPEAT",
-        "IF",
-        "ELSIF",
-        "ELSE",
-        "THEN",
-        "EXIT",
-        "END_IF",
-        "WHILE",
-        "END_WHILE",
-        "FOR",
-        "TO",
-        "BY",
-        "DO",
-        "END_FOR",
-        "CASE",
-        "END_CASE",
-        "OF",
-        "SINT",
-        "INT",
-        "DINT",
-        "LINT",
-        "USINT",
-        "UINT",
-        "LDINT",
-        "ULINT",
-        "REAL",
-        "LREAL",
-        "TIME",
-        "DATE",
-        "TIME_OF_DAY",
-        "DATE_AND_TIME",
-        "STRING",
-        "BOOL",
-        "BYTE",
-        "WORD",
-        "DWORD",
-        "LWORD",
-        "TRUE",
-        "FALSE",
-        "T#0d0h0m0s0ms",
-        "Time#0d0h0m0s0ms",
-        "D#0000-00-00",
-        "DATE#2000-00-00",
-        "TDD#00:00:00.00",
-        "TIME_OF_DAY#00:00:00.00",
-        "DT#0000-00-00:00:00:00.00",
-        "DATE_AND_TIME#0000-00-00-00:00:00.00"};    */
-
-
-                //autocompleteMenu1.AutoPopup = true;
-                //autocompleteMenu1.AppearInterval = 500;
-                //autocompleteMenu1.MinFragmentLength = 2;
-                //autocompleteMenu1.SetAutocompleteMenu(this.fastColoredTextBox1, this.autocompleteMenu1);
-
             }
-
         }
 
 
@@ -523,5 +491,50 @@ namespace CodeEditor
         
 
 
+        
+        
+    private void tabPage_DrawItem(object sender, DrawItemEventArgs e)
+    {
+
+            Rectangle rect = tabPage.GetTabRect(e.Index);
+            Rectangle imageRec = new Rectangle(rect.Right - closeImage.Width,
+                rect.Top + (rect.Height - closeImage.Height) / 2,
+                closeImage.Width, closeImage.Height);
+            // size rect
+            rect.Size = new Size(rect.Width + 20, 38);
+
+            Font f;
+            Brush br = Brushes.Black;
+            StringFormat strF = new StringFormat(StringFormat.GenericDefault);
+            if (tabPage.SelectedTab == tabPage.TabPages[e.Index])
+            {
+                e.Graphics.DrawImage(closeImageAct, imageRec);
+                f = new Font("Arial", 10, FontStyle.Bold);
+                e.Graphics.DrawString(tabPage.TabPages[e.Index].Text, f, br, rect, strF);
+            }
+            else
+            {
+                e.Graphics.DrawImage(closeImage, imageRec);
+                f = new Font("Arial", 9, FontStyle.Regular);
+                e.Graphics.DrawString(tabPage.TabPages[e.Index].Text, f, br, rect, strF);
+            }
+        }
+
+    private void tabPage_MouseClick(object sender, MouseEventArgs e)
+    {
+            for (int i = 0; i < tabPage.TabCount; i++)
+            {
+                Rectangle rect = tabPage.GetTabRect(i);
+                Rectangle imageRec = new Rectangle(rect.Right - closeImage.Width,
+                    rect.Top + (rect.Height - closeImage.Height) / 2,
+                    closeImage.Width, closeImage.Height);
+
+                if (imageRec.Contains(e.Location))
+                    tabPage.TabPages.Remove(tabPage.SelectedTab);
+            }
+        }
+   
+    
+    
     }
 }
