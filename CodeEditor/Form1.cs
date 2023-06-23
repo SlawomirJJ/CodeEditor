@@ -18,9 +18,7 @@ namespace CodeEditor
 {
     public partial class Form1 : Form
     {
-        //private string closeButtonFullPath = @"D:\dokumenty\Informatyka\Praca magisterska\CodeEditor\img\closeBtn.png";
         Image closeImage, closeImageAct;
-        //Image closeImage, closeImageAct;
         public Form1()
         {
             InitializeComponent();
@@ -94,26 +92,6 @@ namespace CodeEditor
                 }
                 i++;              
             }
-/*
-            // dodanie przycisku do zamykania zakładki //
-                // tworzenie przycisku zamykającego
-                int newTabPageIndex = newTabPage.TabIndex;
-                Button closeButton = new Button();
-                closeButton.Text = "x";
-                closeButton.Size = new Size(20, 20);
-            //closeButton.Location = new Point(tabPage.GetTabRect(newTabPageIndex).Right - closeButton.Width, tabPage.GetTabRect(newTabPageIndex).Top);
-            closeButton.Location = new Point(tabPage.Bounds.Right - closeButton.Width - 5, tabPage.Bounds.Top + 5);
-
-            closeButton.Tag = newTabPageIndex; // Przypisujemy tag z numerem indeksu zakładki
-
-                // Dodajemy przycisk zamykający do zakładki
-                tabPage.TabPages[newTabPageIndex].Controls.Add(closeButton);
-            closeButton.BringToFront();
-
-                // Dodajemy obsługę zdarzenia Click dla przycisku
-                closeButton.Click += new EventHandler(CloseTabButton_Click);
-        */
-
 
             // Ustawienie nowej zakładki jako aktualnie wybranej
             tabPage.SelectedTab = newTabPage;
@@ -266,15 +244,9 @@ namespace CodeEditor
         public Style OperatorStyle = new TextStyle(Brushes.MidnightBlue, null, FontStyle.Regular);
         public Style DataTypeStyle = new TextStyle(Brushes.SaddleBrown, null, FontStyle.Regular);
 
-        //private bool multilineCommand;
-        /*
-        private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ColorizeText(sender, e);
-        }       */
 
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
-       {
+        {
             FastColoredTextBox textBox = sender as FastColoredTextBox;
             if (textBox != null)
             {
@@ -304,7 +276,7 @@ namespace CodeEditor
                 range.SetStyle(NumberStyle, @"(\-(\d+))", RegexOptions.Singleline);
 
                 // TIME
-                // duration of time time
+                // duration of time
                 range.SetStyle(NumberStyle, @"(?i)((T|TIME)#\d+(d|h|s|(ms)|m)((\d+)(d|h|(ms)|s|m)){0,4})");
                 // calendar date
                 range.SetStyle(NumberStyle, @"(?i)((T|TIME)#(\d+)-(\d\d)-(\d\d)-(\d\d)?)");
@@ -314,28 +286,40 @@ namespace CodeEditor
                 range.SetStyle(NumberStyle, @"(?i)(DT|DATE_AND_TIME)#(\d+)-(\d\d)-(\d\d)-((\d\d):(\d\d):(\d\d)(.(\d+))?)");
 
                 // data types style
-                range.SetStyle(DataTypeStyle, @"\b((?i)(SINT|INT|DINT|LINT|USINT|UINT|LDINT|ULINT|REAL|LREAL|TIME|DATE|TIME_OF_DAY|DATE_AND_TIME|STRING|BOOL|BYTE|WORD|DWORD|LWORD))\b", RegexOptions.Singleline);
+                //range.SetStyle(DataTypeStyle, @"\b((?i)(SINT|INT|DINT|LINT|USINT|UINT|LDINT|ULINT|REAL|LREAL|TIME|DATE|TIME_OF_DAY|DATE_AND_TIME|STRING|BOOL|BYTE|WORD|DWORD|LWORD))\b", RegexOptions.Singleline);
 
                 // operators and special characters
                 range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\.|,|\[|\]|\{|\}|#|\^|%))", RegexOptions.Singleline);
-                //range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\[|\]|\{|\}))", RegexOptions.Singleline);
 
                 // Code Folding
                 //fastColoredTextBox1.CollapseBlock (fastColoredTextBox1.Selection.Start.iLine,
                 //fastColoredTextBox1.Selection.End.iLine);
 
                 //clear folding markers of changed range
-                e.ChangedRange.ClearFoldingMarkers();
+                //e.ChangedRange.ClearFoldingMarkers();
                 //set folding markers
-                e.ChangedRange.SetFoldingMarkers("{", "}");
-                e.ChangedRange.SetFoldingMarkers(@"#region\b", @"#endregion\b");
+
+
+                var currentSelection = fastColoredTextBox1.Selection.Clone();
+                currentSelection.Normalize();
+
+
+                        const string startMarker = "FUNCTION";
+                        const string endMarker = "END_FUNCTION";
+
+                        fastColoredTextBox1[currentSelection.Start.iLine].FoldingStartMarker = startMarker;
+                        fastColoredTextBox1[currentSelection.End.iLine].FoldingEndMarker = endMarker;
+                        fastColoredTextBox1.Invalidate();
+
+
+
             }
         }
 
-        
 
 
-        private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
+
+    private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
         {
             foreach (TabPage tabPage in tabPage.TabPages)
             {
@@ -351,10 +335,7 @@ namespace CodeEditor
                         fastColoredTextBox.WordWrap = false;
                     }
                 }
-            }
-
-              
-
+            }            
         }
 
 
@@ -366,15 +347,12 @@ namespace CodeEditor
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Size mysize = new System.Drawing.Size(20, 20); // co anh chen vao
-            Bitmap bt = new Bitmap(Properties.Resources.close);
-            // anh nay ban dau minh da them vao
+            Size mysize = new System.Drawing.Size(20, 20);
+            Bitmap bt = new Bitmap(Properties.Resources.close); 
             Bitmap btm = new Bitmap(bt, mysize);
             closeImageAct = btm;
-            //
-            //
+
             Bitmap bt2 = new Bitmap(Properties.Resources.closeBlack);
-            // anh nay ban dau minh da them vao
             Bitmap btm2 = new Bitmap(bt2, mysize);
             closeImage = btm2;
             tabPage.Padding = new Point(30);
@@ -443,13 +421,18 @@ namespace CodeEditor
                 // Tworzenie kontrolki FastColoredTextBox z plikiem
                 FastColoredTextBox fastColoredTextBox1 = new FastColoredTextBox();
                 fastColoredTextBox1.OpenFile(((FileInfo)e.Node.Tag).FullName);
-
+                
                 // Ustawienie właściwości Tag na ścieżkę do pliku
                 fastColoredTextBox1.Tag = ((FileInfo)e.Node.Tag).FullName;
                 newTabPage.Tag = ((FileInfo)e.Node.Tag).FullName;
 
                 // Dodanie kontrolki FastColoredTextBox do nowej zakładki
                 newTabPage.Controls.Add(fastColoredTextBox1);
+                AutocompleteMenuNS.AutocompleteMenu acm = new AutocompleteMenuNS.AutocompleteMenu();
+                acm.SetAutocompleteMenu(fastColoredTextBox1, acm);
+                acm.Items = this.autocompleteMenu1.Items;
+                acm.Colors = this.autocompleteMenu1.Colors;
+                acm.Font = this.autocompleteMenu1.Font;
 
                 // Ustawienie tekstu zakładki na nazwę pliku
                 newTabPage.Text = Path.GetFileName(((FileInfo)e.Node.Tag).FullName);
@@ -487,11 +470,6 @@ namespace CodeEditor
                 }
             }
         }
-
-        
-
-
-        
         
     private void tabPage_DrawItem(object sender, DrawItemEventArgs e)
     {
@@ -520,7 +498,25 @@ namespace CodeEditor
             }
         }
 
-    private void tabPage_MouseClick(object sender, MouseEventArgs e)
+        /*
+        private void fastColoredTextBox1_AutoIndentNeeded(object sender, AutoIndentEventArgs e)
+        {
+            if (Regex.IsMatch(e.LineText, @"(\b(?i)(FUNCTION))"))
+            {
+                e.ShiftNextLines = e.TabLength;
+                return;
+            }
+            if (Regex.IsMatch(e.LineText, @"(\b(?i)(END_FUNCTION))"))
+            {
+                e.Shift = -e.TabLength;
+                e.ShiftNextLines = -e.TabLength;
+                return;
+            }
+        
+        }
+        */
+
+        private void tabPage_MouseClick(object sender, MouseEventArgs e)
     {
             for (int i = 0; i < tabPage.TabCount; i++)
             {
