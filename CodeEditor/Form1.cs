@@ -267,7 +267,7 @@ namespace CodeEditor
                 range.SetStyle(KeyWordStyle, @"\b((?i)((PROGRAM)|(END_PROGRAM)|(VAR)|(VAR_INPUT)|(VAR_OUTPUT)|(VAR_IN_OUT)|(VAR_EXTERNAL)|(VAR_GLOBAL)|(VAR_ACCESS)|(VAR_TEMP)|(VAR_CONFIG)|(END_VAR)|(RETAIN)|(NON_RETAIN)|(PROTECTED)|(PUBLIC)|(PRIVATE)|(INTERNAL)|(CONSTANT)|(IF)|(ELSIF)|(THEN)|(ELSE)|(END_IF)|(CASE)|(OF)|(END_CASE)|(FOR)|(TO)|(BY)|(DO)|(END_FOR)|(EXIT)|(RETURN)|(WHILE)|(END_WHILE)|(REPEAT)|(UNTIL)|(END_REPEAT)|(TYPE)|(END_TYPE)|(ARRAY)|(STRUCT)|(END_STRUCT)|(OVERLAP)|(AT)|(REF_TO)|(REF)|(FUNCTION)|(END_FUNCTION)|(FUNCTION_BLOCK)|(END_FUNCTION_BLOCK)|(CLASS)|(END_CLASS)|(FINAL)|(METHOD)|(END_METHOD)|(EXTENDS)|(OVERRIDE)|(ABSTRACT)|(THIS)|(SUPER)|(INTERFACE)|(END_INTERFACE)|(IMPLEMENTS)|(READ_WRITE)|(READ_ONLY)|(NAMESPACE)|(END_NAMESPACE)))\b", RegexOptions.Singleline);
 
                 ///         DATA TYPES      /// 
-                range.SetStyle(DataTypeStyle, @"\b((?i)((SINT)|(INT)|(DINT)|(LINT)|(USINT)|(UINT)|(UDINT)|(LDINT)|(ULINT)|(REAL)|(LREAL)|(TIME)|(DATE)|(TIME_OF_DAY)|(TOD)|(LTIME_OF_DAY)|(LTOD)|(DATE_AND_TIME)|(DT)|(LDATE_AND_TIME)|(LDT)||(STRING)|(BOOL)|(R_EDGE)|(F_EDGE)|(BYTE)|(WORD)|(DWORD)|(LWORD)|(LTIME)|(LDATE)|(WSTRING)|(CHAR)|(WCHAR)))\b", RegexOptions.Singleline);
+                range.SetStyle(DataTypeStyle, @"\b((?i)((SINT)|(INT)|(DINT)|(LINT)|(USINT)|(UINT)|(UDINT)|(LDINT)|(ULINT)|(REAL)|(LREAL)|(TIME)|(DATE)|(TIME_OF_DAY)|(TOD)|(LTIME_OF_DAY)|(LTOD)|(DATE_AND_TIME)|(DT)|(LDATE_AND_TIME)|(LDT)|(STRING)|(BOOL)|(R_EDGE)|(F_EDGE)|(BYTE)|(WORD)|(DWORD)|(LWORD)|(LTIME)|(LDATE)|(WSTRING)|(CHAR)|(WCHAR)))\b", RegexOptions.Singleline);
 
                 // bool
                 range.SetStyle(NumberStyle, @"\b((?i)(TRUE|FALSE))\b", RegexOptions.Singleline);
@@ -284,9 +284,6 @@ namespace CodeEditor
                 range.SetStyle(NumberStyle, @"(?i)(TDD|TIME_OF_DAY)#(\d\d):(\d\d):(\d\d)(.(\d\d))?");
                 //date and time of day
                 range.SetStyle(NumberStyle, @"(?i)(DT|DATE_AND_TIME)#(\d+)-(\d\d)-(\d\d)-((\d\d):(\d\d):(\d\d)(.(\d+))?)");
-
-                // data types style
-                //range.SetStyle(DataTypeStyle, @"\b((?i)(SINT|INT|DINT|LINT|USINT|UINT|LDINT|ULINT|REAL|LREAL|TIME|DATE|TIME_OF_DAY|DATE_AND_TIME|STRING|BOOL|BYTE|WORD|DWORD|LWORD))\b", RegexOptions.Singleline);
 
                 // operators and special characters
                 range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\.|,|\[|\]|\{|\}|#|\^|%))", RegexOptions.Singleline);
