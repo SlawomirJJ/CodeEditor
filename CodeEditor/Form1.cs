@@ -12,7 +12,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using FastColoredTextBoxNS;
 using CodeEditor.Properties;
-
+using CPDev.STComp05;
+using System.Xml.Linq;
 
 namespace CodeEditor
 {
@@ -236,236 +237,87 @@ namespace CodeEditor
         }   */
 
         // Style
-        public Style CommentStyle = new TextStyle(Brushes.Green, null, FontStyle.Bold);
-        public Style KeyWordStyle = new TextStyle(Brushes.Blue, null, FontStyle.Bold);
-        public Style StringStyle = new TextStyle(Brushes.Red, null, FontStyle.Bold);
-        public Style NumberStyle = new TextStyle(Brushes.Olive, null, FontStyle.Regular);
-        public Style OperatorStyle = new TextStyle(Brushes.MidnightBlue, null, FontStyle.Regular);
-        public Style DataTypeStyle = new TextStyle(Brushes.SaddleBrown, null, FontStyle.Regular);
-        public Style NormalStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
+        public Style ttIdentifierStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
+        public Style ttImmConstantStyle = new TextStyle(Brushes.DarkGreen, null, FontStyle.Regular);
+        public Style ttKeywordStyle = new TextStyle(Brushes.Blue, null, FontStyle.Regular);
+        public Style ttInvalidStyle = new TextStyle(Brushes.Red, null, FontStyle.Regular);
+        public Style ttOperatorStyle = new TextStyle(Brushes.Purple, null, FontStyle.Regular);
+        public Style ttDelimiterStyle = new TextStyle(Brushes.DarkGray, null, FontStyle.Regular);
+        public Style ttCommentStyle = new TextStyle(Brushes.Green, null, FontStyle.Regular);
+        public Style ttUnknownStyle = new TextStyle(Brushes.Gray, null, FontStyle.Regular);
+        public Style ttDirectiveStyle = new TextStyle(Brushes.DarkOrange, null, FontStyle.Regular);
+        public Style ttWhiteSpaceStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);       
+        public Style ttVarLocDescStyle = new TextStyle(Brushes.Yellow, null, FontStyle.Regular);
+        public Style ttILLabelStyle = new TextStyle(Brushes.Pink, null, FontStyle.Regular);
+        public Style ttVCBlockStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
+        
 
-        int currentState = 1;
-        List<Range> stringRanges = new List<Range>();
-        IEnumerable<Range> commentRanges = null;
-        List<Range> doubleQuoteRanges = new List<Range>();
+        STTokenizer stTokenizer = new STTokenizer();
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
             FastColoredTextBox textBox = sender as FastColoredTextBox;
+            //e.ChangedRange.FromLine , e.ChangedRange.ToLine
             if (textBox != null)
             {
-                Range range = (sender as FastColoredTextBox).Range;
+                string tekst = textBox.Text;
+                Range range = (sender as FastColoredTextBox).VisibleRange;
                 //clear style of changed range
-                range.ClearStyle(CommentStyle, KeyWordStyle, StringStyle, NumberStyle, OperatorStyle, DataTypeStyle);
+                range.ClearStyle(ttIdentifierStyle, ttImmConstantStyle,ttKeywordStyle, ttInvalidStyle, ttOperatorStyle, ttDelimiterStyle, ttCommentStyle, ttUnknownStyle, ttDirectiveStyle, ttWhiteSpaceStyle, ttVarLocDescStyle, ttILLabelStyle, ttVCBlockStyle);
+                Range r = new Range(textBox);
+                char[] textChars = range.Text.ToCharArray();
 
-
-
-                //foreach (var range in textBox.Range.GetRanges())
-                //{
-                /*
-                    if (currentState == 1) // Normalny tekst
-                    {
-                        if (range.Text.StartsWith(@"//")) // Początek komentarza jednolinijkowego
-                        {
-                            currentState = 2; // Zmiana na stan komentarza
-                            //range.SetStyle(CommentStyle);
-                        }
-                        else
-                        {
-                            range.SetStyle(NormalStyle);
-                        }
-                    }
-                    else if (currentState == 2) // Komentarz jednolinijkowy
-                    {
-                        if (range.Text.EndsWith("\n")) // Znak końca linii
-                        {
-                            currentState = 1; // Powrót do stanu normalnego tekstu
-                            range.SetStyle(NormalStyle);
-                        }
-                        else
-                        {
-                            range.SetStyle(CommentStyle);
-                        }
-                    } */
-
-
-                /*
-                Range firstRange = textBox.GetRanges(@"//", RegexOptions.Multiline).FirstOrDefault();
-                Range secondRange = textBox.GetRanges(@"$", RegexOptions.Multiline).FirstOrDefault();
-                
-                if (firstRange != null && secondRange != null)
+                TokenList TokenList = stTokenizer.TokenizeSTStream(textChars, 1);
+                foreach (var token in TokenList.Lista)
                 {
-                    Range combinedRange = new Range(textBox)
+                    Range tokenRange = fastColoredTextBox1.GetRange(token.Pozycja,(token.Pozycja + token.Tekst.Length));
+                        
+                    switch (token.Typ)
                     {
-                        Start = firstRange.Start,
-                        End = secondRange.End
-                    };
-                    combinedRange.SetStyle(CommentStyle);
-                } */
-                bool FirstRange(Range range1, Range range2)
-                {
-                    if (range1.Start < range2.Start)
-                        return true;
-                    else
-                        return false;
-                    
-                }
-                // komentarze
-                commentRanges = textBox.GetRanges(@"(//.*$)", RegexOptions.Multiline);
-                foreach (var commentRange in commentRanges)
-                {
-                    if (stringRanges != null && stringRanges.Any())
-                    {
-                        int iter = 0;
-                        foreach (Range stringRange in stringRanges)
-                        {
-                            
-                            if (commentRange.GetIntersectionWith(stringRange).IsEmpty == true)
-                            {
-                                iter++;
-                            }
-                            else if(commentRange.GetIntersectionWith(stringRange).IsEmpty == false && FirstRange(commentRange, stringRange))
-                            {
-                                commentRange.SetStyle(CommentStyle);
-                            }
-                        }
-                        if (stringRanges.Count() == iter)
-                        {
-                            commentRange.SetStyle(CommentStyle);
-                            
-                        }
-                    }
-                    else
-                        commentRange.SetStyle(CommentStyle);
+                        case CPDev.STComp05.STTokenType.ttIdentifier:
+                            tokenRange.SetStyle(ttIdentifierStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttImmConstant:
+                            tokenRange.SetStyle(ttImmConstantStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttKeyword:
+                            tokenRange.SetStyle(ttKeywordStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttInvalid:
+                            tokenRange.SetStyle(ttInvalidStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttOperator:
+                            tokenRange.SetStyle(ttOperatorStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttDelimiter:
+                            tokenRange.SetStyle(ttDelimiterStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttComment:
+                            tokenRange.SetStyle(ttCommentStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttUnknown:
+                            tokenRange.SetStyle(ttUnknownStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttDirective:
+                            tokenRange.SetStyle(ttDirectiveStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttWhiteSpace:
+                            tokenRange.SetStyle(ttWhiteSpaceStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttVarLocDesc:
+                            tokenRange.SetStyle(ttVarLocDescStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttILLabel:
+                            tokenRange.SetStyle(ttILLabelStyle);
+                            break;
+                        case CPDev.STComp05.STTokenType.ttVCBlock:
+                            tokenRange.SetStyle(ttVCBlockStyle);
+                            break;
+                        default:
+                            break;
 
-                }
-                
-                // strings
-                var doubleQuoteRangesT = textBox.GetRanges("\"", RegexOptions.Multiline);
-                foreach (var doubleQuoteRange in doubleQuoteRangesT)
-                {   //włącza się tylko jeśli jest komentarz - do poprawy
-                    if (commentRanges.Any(r => r.GetIntersectionWith(doubleQuoteRange).IsEmpty == true))
-                    {
-                        doubleQuoteRanges.Add(doubleQuoteRange);
                     }
                 }
-
-                if (doubleQuoteRanges != null)
-                {
-                    if (doubleQuoteRanges.Count() >= 2)
-                    {
-                        for (int i = 0; i < doubleQuoteRanges.Count() - 1; i += 2)
-                        {
-                            Range startRange = doubleQuoteRanges.ElementAt(i);
-                            Range endRange = doubleQuoteRanges.ElementAt(i + 1);
-
-                                Range stringRange = new Range(textBox)
-                                {
-                                    Start = startRange.Start,
-                                    End = endRange.End
-                                };
-                                stringRanges.Add(stringRange);
-                        }
-                    }
-                }
-
-
-                //stringRanges = textBox.GetRanges("(\".*?\")|(\".*)", RegexOptions.Singleline);
-                if (stringRanges != null)
-                {
-                    foreach (var stringRange in stringRanges)
-                    {
-                        if (commentRanges != null && commentRanges.Any())
-                        {
-                            int iter = 0;
-                            foreach (Range commentRange in commentRanges)
-                            {
-                                if (stringRange.GetIntersectionWith(commentRange).IsEmpty == true || (stringRange.GetIntersectionWith(commentRange).IsEmpty == false && FirstRange(stringRange, commentRange)))
-                                {
-                                    iter++;
-                                }
-                                else if (stringRange.GetIntersectionWith(commentRange).IsEmpty == false && FirstRange(stringRange, commentRange))
-                                {
-                                    stringRange.SetStyle(StringStyle);
-                                }
-                            }
-                            if (commentRanges.Count() == iter)
-                            {
-                                stringRange.SetStyle(StringStyle);
-                            }
-                        }
-                        else
-                            stringRange.SetStyle(StringStyle);
-                    }
-                }
-                
-
-
-
-
-                //comments
-                //StyleIndex styleIndex = GetStyleIndex(startIndex);
-                //range.SetStyle(CommentStyle, @"//.*$", RegexOptions.Multiline);
-                //range.SetStyle(CommentStyle, @"(/\*.*?\*/)|(/\*.*)", RegexOptions.Singleline);
-
-
-                // strings
-                //range.SetStyle(StringStyle, "(\'.*?\')|(\'.*)", RegexOptions.Singleline);
-                //range.SetStyle(StringStyle, "(\".*?\")|(\".*)", RegexOptions.Singleline);
-
-
-                //range.SetStyle(StringStyle, @"((?!(//.*$))a|b)", RegexOptions.Singleline);
-
-
-
-                // key words
-                range.SetStyle(KeyWordStyle, @"\b((?i)((PROGRAM)|(END_PROGRAM)|(VAR)|(VAR_INPUT)|(VAR_OUTPUT)|(VAR_IN_OUT)|(VAR_EXTERNAL)|(VAR_GLOBAL)|(VAR_ACCESS)|(VAR_TEMP)|(VAR_CONFIG)|(END_VAR)|(RETAIN)|(NON_RETAIN)|(PROTECTED)|(PUBLIC)|(PRIVATE)|(INTERNAL)|(CONSTANT)|(IF)|(ELSIF)|(THEN)|(ELSE)|(END_IF)|(CASE)|(OF)|(END_CASE)|(FOR)|(TO)|(BY)|(DO)|(END_FOR)|(EXIT)|(RETURN)|(WHILE)|(END_WHILE)|(REPEAT)|(UNTIL)|(END_REPEAT)|(TYPE)|(END_TYPE)|(ARRAY)|(STRUCT)|(END_STRUCT)|(OVERLAP)|(AT)|(REF_TO)|(REF)|(FUNCTION)|(END_FUNCTION)|(FUNCTION_BLOCK)|(END_FUNCTION_BLOCK)|(CLASS)|(END_CLASS)|(FINAL)|(METHOD)|(END_METHOD)|(EXTENDS)|(OVERRIDE)|(ABSTRACT)|(THIS)|(SUPER)|(INTERFACE)|(END_INTERFACE)|(IMPLEMENTS)|(READ_WRITE)|(READ_ONLY)|(NAMESPACE)|(END_NAMESPACE)))\b", RegexOptions.Singleline);
-
-                ///         DATA TYPES      /// 
-                range.SetStyle(DataTypeStyle, @"\b((?i)((SINT)|(INT)|(DINT)|(LINT)|(USINT)|(UINT)|(UDINT)|(LDINT)|(ULINT)|(REAL)|(LREAL)|(TIME)|(DATE)|(TIME_OF_DAY)|(TOD)|(LTIME_OF_DAY)|(LTOD)|(DATE_AND_TIME)|(DT)|(LDATE_AND_TIME)|(LDT)|(STRING)|(BOOL)|(R_EDGE)|(F_EDGE)|(BYTE)|(WORD)|(DWORD)|(LWORD)|(LTIME)|(LDATE)|(WSTRING)|(CHAR)|(WCHAR)))\b", RegexOptions.Singleline);
-
-                // bool
-                range.SetStyle(NumberStyle, @"\b((?i)(TRUE|FALSE))\b", RegexOptions.Singleline);
-                // numbers
-                range.SetStyle(NumberStyle, @"\b(\d+(\.\d+)?)\b", RegexOptions.Singleline);
-                range.SetStyle(NumberStyle, @"(\-(\d+))", RegexOptions.Singleline);
-                range.SetStyle(NumberStyle, @"\b((?i)(((REAL#)?(\-)?\d+(\.\d+)?e(\+|\-)?(\d+))))\b", RegexOptions.Singleline);
-
-                // TIME
-                // duration of time
-                range.SetStyle(NumberStyle, @"(?i)((T|TIME)#\d+(d|h|s|(ms)|m)((\d+)(d|h|(ms)|s|m)){0,4})");
-                // calendar date
-                range.SetStyle(NumberStyle, @"(?i)((T|TIME)#(\d+)-(\d\d)-(\d\d)-(\d\d)?)");
-                // time of day
-                range.SetStyle(NumberStyle, @"(?i)(TDD|TIME_OF_DAY)#(\d\d):(\d\d):(\d\d)(.(\d\d))?");
-                //date and time of day
-                range.SetStyle(NumberStyle, @"(?i)(DT|DATE_AND_TIME)#(\d+)-(\d\d)-(\d\d)-((\d\d):(\d\d):(\d\d)(.(\d+))?)");
-
-                // operators and special characters
-                //range.SetStyle(OperatorStyle, @"((?i)(\(|\)|(NOT)|\*|(\*\*)|\/|(MOD)|\+|\=|\-|<|>|(<=)|(>=)|(<>)|&|(AND)|(XOR)|(OR)|(:=)|;|:|\.|,|\[|\]|\{|\}|#|\^|%))", RegexOptions.Singleline);
-
-                // Code Folding
-                //fastColoredTextBox1.CollapseBlock (fastColoredTextBox1.Selection.Start.iLine,
-                //fastColoredTextBox1.Selection.End.iLine);
-
-                //clear folding markers of changed range 
-                //e.ChangedRange.ClearFoldingMarkers();
-                //set folding markers
-
-
-                //var currentSelection = fastColoredTextBox1.Selection.Clone();
-                //currentSelection.Normalize();
-
-
-                //        const string startMarker = "FUNCTION";
-                //        const string endMarker = "END_FUNCTION";
-
-                //        fastColoredTextBox1[currentSelection.Start.iLine].FoldingStartMarker = startMarker;
-                //        fastColoredTextBox1[currentSelection.End.iLine].FoldingEndMarker = endMarker;
-                //        fastColoredTextBox1.Invalidate();
-
-
-
-            }
+            }   
         }
 
 
