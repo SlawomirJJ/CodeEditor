@@ -259,18 +259,25 @@ namespace CodeEditor
             //e.ChangedRange.FromLine , e.ChangedRange.ToLine
             if (textBox != null)
             {
-                string tekst = textBox.Text;
-                Range range = (sender as FastColoredTextBox).VisibleRange;
+
+                // Pobierz indeks bieżącej linii
+                int currentLineIndex = textBox.LinesCount > 0 ? textBox.Selection.Start.iLine : 0;
+
+                // Utwórz zakres dla całej linii
+                Range range = textBox.GetLine(currentLineIndex);
+
                 //clear style of changed range
                 range.ClearStyle(ttIdentifierStyle, ttImmConstantStyle,ttKeywordStyle, ttInvalidStyle, ttOperatorStyle, ttDelimiterStyle, ttCommentStyle, ttUnknownStyle, ttDirectiveStyle, ttWhiteSpaceStyle, ttVarLocDescStyle, ttILLabelStyle, ttVCBlockStyle);
-                Range r = new Range(textBox);
+
                 char[] textChars = range.Text.ToCharArray();
 
-                TokenList TokenList = stTokenizer.TokenizeSTStream(textChars, 1);
+                TokenList TokenList = stTokenizer.TokenizeSTStream(textChars, currentLineIndex);
                 foreach (var token in TokenList.Lista)
                 {
-                    Range tokenRange = fastColoredTextBox1.GetRange(token.Pozycja,(token.Pozycja + token.Tekst.Length));
-                        
+                    Place tokenStart = new Place(token.Pozycja, token.LiniaKodu);
+                    Place tokenEnd = new Place(token.Pozycja + token.Tekst.Length, token.LiniaKodu);
+                    Range tokenRange = new Range(fastColoredTextBox1, tokenStart, tokenEnd);
+
                     switch (token.Typ)
                     {
                         case CPDev.STComp05.STTokenType.ttIdentifier:
