@@ -404,6 +404,8 @@ namespace CodeEditor
             this.fastColoredTextBox1.TabIndex = 0;
             this.fastColoredTextBox1.Zoom = 100;
             this.fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.fastColoredTextBox1_TextChanged);
+            //this.fastColoredTextBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.fastColoredTextBox1_KeyDown);
+            //this.fastColoredTextBox1.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.fastColoredTextBox1_PreviewKeyDown);
             // 
             // tree
             // 

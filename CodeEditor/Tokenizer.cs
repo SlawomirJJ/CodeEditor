@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Speech.Recognition;
 using System.Text;
 //using CPDev.Public;
 //using ConfigManager_ = CPDev.SADlg.ConfigManager;
+using CodeEditor;
 
 namespace CPDev.STComp05
 {
@@ -126,6 +128,7 @@ namespace CPDev.STComp05
             string rdd = sr.ReadToEnd();
             return TokenizeSTStream(rdd.ToCharArray(), 1);
         }
+        
 
         /// <summary>
         /// Dzieli ³añcuch na fragmenty

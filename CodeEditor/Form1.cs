@@ -14,6 +14,7 @@ using FastColoredTextBoxNS;
 using CodeEditor.Properties;
 using CPDev.STComp05;
 using System.Xml.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace CodeEditor
 {
@@ -236,101 +237,12 @@ namespace CodeEditor
             ////fastColoredTextBox1.Redo();
         }   */
 
-        // Style
-        public Style ttIdentifierStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
-        public Style ttImmConstantStyle = new TextStyle(Brushes.DarkGreen, null, FontStyle.Regular);
-        public Style ttKeywordStyle = new TextStyle(Brushes.Blue, null, FontStyle.Regular);
-        public Style ttInvalidStyle = new TextStyle(Brushes.Red, null, FontStyle.Regular);
-        public Style ttOperatorStyle = new TextStyle(Brushes.Purple, null, FontStyle.Regular);
-        public Style ttDelimiterStyle = new TextStyle(Brushes.DarkGray, null, FontStyle.Regular);
-        public Style ttCommentStyle = new TextStyle(Brushes.Green, null, FontStyle.Regular);
-        public Style ttUnknownStyle = new TextStyle(Brushes.Gray, null, FontStyle.Regular);
-        public Style ttDirectiveStyle = new TextStyle(Brushes.DarkOrange, null, FontStyle.Regular);
-        public Style ttWhiteSpaceStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);       
-        public Style ttVarLocDescStyle = new TextStyle(Brushes.Yellow, null, FontStyle.Regular);
-        public Style ttILLabelStyle = new TextStyle(Brushes.Pink, null, FontStyle.Regular);
-        public Style ttVCBlockStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
         
 
-        STTokenizer stTokenizer = new STTokenizer();
-        private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            FastColoredTextBox textBox = sender as FastColoredTextBox;
-            //e.ChangedRange.FromLine , e.ChangedRange.ToLine
-            if (textBox != null)
-            {
-
-                // Pobierz indeks bieżącej linii
-                int currentLineIndex = textBox.LinesCount > 0 ? textBox.Selection.Start.iLine : 0;
-
-                // Utwórz zakres dla całej linii
-                Range range = textBox.GetLine(currentLineIndex);
-
-                //clear style of changed range
-                range.ClearStyle(ttIdentifierStyle, ttImmConstantStyle,ttKeywordStyle, ttInvalidStyle, ttOperatorStyle, ttDelimiterStyle, ttCommentStyle, ttUnknownStyle, ttDirectiveStyle, ttWhiteSpaceStyle, ttVarLocDescStyle, ttILLabelStyle, ttVCBlockStyle);
-
-                char[] textChars = range.Text.ToCharArray();
-
-                TokenList TokenList = stTokenizer.TokenizeSTStream(textChars, currentLineIndex);
-                foreach (var token in TokenList.Lista)
-                {
-                    Place tokenStart = new Place(token.Pozycja, token.LiniaKodu);
-                    Place tokenEnd = new Place(token.Pozycja + token.Tekst.Length, token.LiniaKodu);
-                    Range tokenRange = new Range(fastColoredTextBox1, tokenStart, tokenEnd);
-
-                    switch (token.Typ)
-                    {
-                        case CPDev.STComp05.STTokenType.ttIdentifier:
-                            tokenRange.SetStyle(ttIdentifierStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttImmConstant:
-                            tokenRange.SetStyle(ttImmConstantStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttKeyword:
-                            tokenRange.SetStyle(ttKeywordStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttInvalid:
-                            tokenRange.SetStyle(ttInvalidStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttOperator:
-                            tokenRange.SetStyle(ttOperatorStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttDelimiter:
-                            tokenRange.SetStyle(ttDelimiterStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttComment:
-                            tokenRange.SetStyle(ttCommentStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttUnknown:
-                            tokenRange.SetStyle(ttUnknownStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttDirective:
-                            tokenRange.SetStyle(ttDirectiveStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttWhiteSpace:
-                            tokenRange.SetStyle(ttWhiteSpaceStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttVarLocDesc:
-                            tokenRange.SetStyle(ttVarLocDescStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttILLabel:
-                            tokenRange.SetStyle(ttILLabelStyle);
-                            break;
-                        case CPDev.STComp05.STTokenType.ttVCBlock:
-                            tokenRange.SetStyle(ttVCBlockStyle);
-                            break;
-                        default:
-                            break;
-
-                    }
-                }
-            }   
-        }
 
 
 
-
-    private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
+        private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
         {
             foreach (TabPage tabPage in tabPage.TabPages)
             {
@@ -508,6 +420,10 @@ namespace CodeEditor
                 e.Graphics.DrawString(tabPage.TabPages[e.Index].Text, f, br, rect, strF);
             }
         }
+
+        
+
+
 
         /*
         private void fastColoredTextBox1_AutoIndentNeeded(object sender, AutoIndentEventArgs e)
