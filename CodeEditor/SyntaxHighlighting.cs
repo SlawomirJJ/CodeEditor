@@ -37,9 +37,10 @@ namespace CodeEditor
 
         STTokenizer stTokenizer = new STTokenizer();
         List<int> listOfStates = new List<int>();
+        FastColoredTextBox textBox;
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
-            FastColoredTextBox textBox = sender as FastColoredTextBox;
+            textBox = sender as FastColoredTextBox;
 
             if (textBox != null)
             {
@@ -47,29 +48,37 @@ namespace CodeEditor
                 // Pobierz indeks bieżącej linii
                 int currentLineIndex = textBox.LinesCount > 0 ? (textBox.Selection.Start.iLine) : 0;
 
-                tokenize(currentLineIndex, State);
+                Tokenize(currentLineIndex, State);
 
-                void tokenize(int LineIndex, int state)
+                
+
+                
+            }
+        }
+
+        void Tokenize(int lineIndex, int state)
+        {
+            if (lineIndex >= 0 && lineIndex < textBox.LinesCount)
+            {
+                // Utwórz zakres dla całej linii
+                FastColoredTextBoxNS.Range range = textBox.GetLine(lineIndex);
+
+                range.ClearStyle(ttIdentifierStyle, ttImmConstantStyle, ttKeywordStyle, ttInvalidStyle, ttOperatorStyle, ttDelimiterStyle, ttCommentStyle, ttUnknownStyle, ttDirectiveStyle, ttWhiteSpaceStyle, ttVarLocDescStyle, ttILLabelStyle, ttVCBlockStyle);
+
+                char[] textChars = range.Text.ToCharArray();
+                TokenList TokenList = stTokenizer.TokenizeSTStream(textChars, lineIndex);
+                if (listOfStates.Count == 0)
                 {
-                    // Utwórz zakres dla całej linii
-                    FastColoredTextBoxNS.Range range = textBox.GetLine(LineIndex);
+                    listOfStates.Add(1);//dodajemy zerową linię ze stanem 1
+                }
+                switch (listOfStates[lineIndex])
+                {
+                    case 1:
+                        ColorizeTokens(TokenList);
+                        void ColorizeTokens(TokenList tokenList)
+                        {
 
-                    range.ClearStyle(ttIdentifierStyle, ttImmConstantStyle, ttKeywordStyle, ttInvalidStyle, ttOperatorStyle, ttDelimiterStyle, ttCommentStyle, ttUnknownStyle, ttDirectiveStyle, ttWhiteSpaceStyle, ttVarLocDescStyle, ttILLabelStyle, ttVCBlockStyle);
 
-                    char[] textChars = range.Text.ToCharArray();
-                    TokenList TokenList = stTokenizer.TokenizeSTStream(textChars, LineIndex);
-                    if(listOfStates.Count == 0)
-                    {
-                        listOfStates.Add(1);//dodajemy zerową linię ze stanem 1
-                    }
-                    switch (listOfStates[currentLineIndex])
-                    {
-                        case 1:
-                            ColorizeTokens(TokenList);
-                            void ColorizeTokens(TokenList tokenList)
-                            { 
-                                
-                            
                             foreach (var token in tokenList.Lista)
                             {
                                 Place tokenStart = new Place(token.Pozycja, token.LiniaKodu);
@@ -79,131 +88,138 @@ namespace CodeEditor
 
                                 int lastIndex = textChars.Length - 1;
                                 // dodać sprawdzenie czy komentarz nie jest jednolinijkowy
-                                if (lastToken.Typ == STTokenType.ttComment && textChars[lastIndex-1]=='*' && textChars[lastIndex - 1] == ')')
+                                if (lastToken.Typ == STTokenType.ttComment && textChars[lastIndex - 1] == '*' && textChars[lastIndex - 1] == ')')
                                 {
-                                    AddNewLineWithStartingState(currentLineIndex + 1, 1);
+                                    AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
 
                                 }
                                 else if (lastToken.Typ == STTokenType.ttComment && (textChars[lastIndex - 1] != '*' || textChars[lastIndex - 1] != ')'))
                                 {
-                                    AddNewLineWithStartingState(currentLineIndex + 1, 2);
+                                    AddNewLineWithStartingState(lineIndex + 1, 2, textBox);
 
                                 }
-                                else if (lastToken.Typ != STTokenType.ttComment ) // jeszcze trzeba dodać czy nie jest stringiem
+                                else if (lastToken.Typ != STTokenType.ttComment) // jeszcze trzeba dodać czy nie jest stringiem
                                 {
-                                    AddNewLineWithStartingState(currentLineIndex + 1, 1);
+                                    AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
 
                                 }
                                 // dodać ify dla stringów
 
-                                    switch (token.Typ)
-                                    {
-                                        case CPDev.STComp05.STTokenType.ttIdentifier:
-                                            tokenRange.SetStyle(ttIdentifierStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttImmConstant:
-                                            tokenRange.SetStyle(ttImmConstantStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttKeyword:
-                                            tokenRange.SetStyle(ttKeywordStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttInvalid:
-                                            tokenRange.SetStyle(ttInvalidStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttOperator:
-                                            tokenRange.SetStyle(ttOperatorStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttDelimiter:
-                                            tokenRange.SetStyle(ttDelimiterStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttComment:
-                                            tokenRange.SetStyle(ttCommentStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttUnknown:
-                                            tokenRange.SetStyle(ttUnknownStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttDirective:
-                                            tokenRange.SetStyle(ttDirectiveStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttWhiteSpace:
-                                            tokenRange.SetStyle(ttWhiteSpaceStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttVarLocDesc:
-                                            tokenRange.SetStyle(ttVarLocDescStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttILLabel:
-                                            tokenRange.SetStyle(ttILLabelStyle);
-                                            break;
-                                        case CPDev.STComp05.STTokenType.ttVCBlock:
-                                            tokenRange.SetStyle(ttVCBlockStyle);
-                                            break;
-                                        default:
-                                            break;
-
-                                    }
-                                }
-                            }
-                            break;
-                        case 2:
-                            CommentState(textChars, LineIndex);
-                            void CommentState(char[] TextM, int LineOffset)
-                            {
-                                Place tokenStart;
-                                Place tokenEnd;
-                                FastColoredTextBoxNS.Range tokenRange;
-                                int nowPos;
-                                int firstIndexOutOfComment;
-                                bool firstCallOutOfComment=true;
-                                bool flag = false;
-                                List<char> listOfCharsAfterComment = new List<char>();
-                                for (nowPos = 0; nowPos < TextM.Length; nowPos++)
+                                switch (token.Typ)
                                 {
-
-                                    if (TextM[nowPos] == '*' && nowPos + 1 < TextM.Length && TextM[nowPos + 1] == ')')
-                                    {
-                                        tokenStart = new Place(0, LineOffset);
-                                        tokenEnd = new Place(nowPos + 2, LineOffset);
-                                        tokenRange = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
+                                    case CPDev.STComp05.STTokenType.ttIdentifier:
+                                        tokenRange.SetStyle(ttIdentifierStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttImmConstant:
+                                        tokenRange.SetStyle(ttImmConstantStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttKeyword:
+                                        tokenRange.SetStyle(ttKeywordStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttInvalid:
+                                        tokenRange.SetStyle(ttInvalidStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttOperator:
+                                        tokenRange.SetStyle(ttOperatorStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttDelimiter:
+                                        tokenRange.SetStyle(ttDelimiterStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttComment:
                                         tokenRange.SetStyle(ttCommentStyle);
-                                        flag = true;
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttUnknown:
+                                        tokenRange.SetStyle(ttUnknownStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttDirective:
+                                        tokenRange.SetStyle(ttDirectiveStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttWhiteSpace:
+                                        tokenRange.SetStyle(ttWhiteSpaceStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttVarLocDesc:
+                                        tokenRange.SetStyle(ttVarLocDescStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttILLabel:
+                                        tokenRange.SetStyle(ttILLabelStyle);
+                                        break;
+                                    case CPDev.STComp05.STTokenType.ttVCBlock:
+                                        tokenRange.SetStyle(ttVCBlockStyle);
+                                        break;
+                                    default:
+                                        break;
 
-                                        AddNewLineWithStartingState(currentLineIndex + 1, 1);
-                                    }
-                                    else if (flag == true)
-                                    {
-                                        if (firstCallOutOfComment == true)
-                                        {
-                                            firstIndexOutOfComment = nowPos;
-                                            firstCallOutOfComment = false;
-                                        }
-                                        // uwzględnić przesunięcie pozycji 
-                                        listOfCharsAfterComment.Add(TextM[nowPos]);
-                                        char[] textCharsAfterComment = listOfCharsAfterComment.ToArray();
-                                        TokenList TokenListAfterComment = stTokenizer.TokenizeSTStream(textCharsAfterComment, LineIndex);
-                                        ColorizeTokens(TokenListAfterComment);
-                                    }
-                                    else if (flag == false)
-                                    {
-                                        tokenStart = new Place(0, LineOffset);
-                                        tokenEnd = new Place(nowPos + 1, LineOffset);
-                                        tokenRange = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
-                                        tokenRange.SetStyle(ttCommentStyle);
-                                        AddNewLineWithStartingState(currentLineIndex + 1, 2);
-                                    }
-                                       
                                 }
                             }
+                        }
+                        break;
+                    case 2:
+                        CommentState(textChars, lineIndex);
+                        void CommentState(char[] TextM, int LineOffset)
+                        {
+                            Place tokenStart;
+                            Place tokenEnd;
+                            FastColoredTextBoxNS.Range tokenRange;
+                            int nowPos;
+                            int firstIndexOutOfComment = 0;
+                            bool firstCallOutOfComment = true;
+                            bool flag = false;
+                            int positionCharAfterComment = 0;
+                            List<char> listOfCharsAfterComment = new List<char>();
+                            for (nowPos = 0; nowPos < TextM.Length; nowPos++)
+                            {
 
-                            break;
-                        case 3:
-                            break;
-                        default:
-                            break;
-                    }
+                                if (nowPos - 1 >= 0 && TextM[nowPos - 1] == '*' && TextM[nowPos] == ')')
+                                {
+                                    tokenStart = new Place(0, LineOffset);
+                                    tokenEnd = new Place(nowPos + 2, LineOffset);
+                                    tokenRange = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
+                                    tokenRange.SetStyle(ttCommentStyle);
+                                    flag = true;
 
+                                    AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
+                                }
+                                else if (flag == false)
+                                {
+                                    tokenStart = new Place(0, LineOffset);
+                                    tokenEnd = new Place(nowPos + 1, LineOffset);
+                                    tokenRange = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
+                                    tokenRange.SetStyle(ttCommentStyle);
+                                    AddNewLineWithStartingState(lineIndex + 1, 2, textBox);
+                                }
+                                else if (flag == true)
+                                {
+                                    if (firstCallOutOfComment == true)
+                                    {
+                                        firstIndexOutOfComment = nowPos;
+                                        firstCallOutOfComment = false;
+                                    }
+                                    listOfCharsAfterComment.Add(TextM[nowPos]);
+                                    char[] textCharsAfterComment = listOfCharsAfterComment.ToArray();
+                                    TokenList TokenListAfterComment = stTokenizer.TokenizeSTStream(textCharsAfterComment, lineIndex);
+                                    var tokenListAfterDisplacement = DisplacementTokensAfterComment(TokenListAfterComment, firstIndexOutOfComment);
+
+                                    // Utwórz zakres dla obszaru po komentarzu i wyczyść go
+                                    tokenStart = new Place(firstIndexOutOfComment, LineOffset);
+                                    tokenEnd = new Place(nowPos + 1, LineOffset);
+                                    var rangeAfterComment = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
+
+                                    rangeAfterComment.ClearStyle(ttIdentifierStyle, ttImmConstantStyle, ttKeywordStyle, ttInvalidStyle, ttOperatorStyle, ttDelimiterStyle, ttCommentStyle, ttUnknownStyle, ttDirectiveStyle, ttWhiteSpaceStyle, ttVarLocDescStyle, ttILLabelStyle, ttVCBlockStyle);
+
+                                    ColorizeTokens(tokenListAfterDisplacement);
+                                    positionCharAfterComment++;
+                                }
+
+                            }
+                        }
+
+                        break;
+                    case 3:
+                        break;
+                    default:
+                        break;
                 }
 
-                
             }
         }
         /// <summary>
@@ -211,7 +227,7 @@ namespace CodeEditor
         /// </summary>
         /// <param name="line"></param>
         /// <param name="state"></param>
-        void AddNewLineWithStartingState(int line, int state)
+        void AddNewLineWithStartingState(int line, int state, FastColoredTextBox textBox)
         {
             
             if (!(listOfStates.Count > line))
@@ -219,10 +235,23 @@ namespace CodeEditor
                 listOfStates.Add(state);
             }
             else
+            {
                 listOfStates[line] = state;
+                Tokenize(line, state);
+            }
+                
         }
 
-
+        TokenList DisplacementTokensAfterComment(TokenList TokenListAfterComment,int firstIndexOutOfComment)
+        {
+            for (int i = 0; i < TokenListAfterComment.Lista.Count; i++)
+            {
+                TokenListAfterComment.Lista[i].Pozycja += firstIndexOutOfComment;
+            }
+            return TokenListAfterComment;
+        }
+            
+            
 
     }
 }
