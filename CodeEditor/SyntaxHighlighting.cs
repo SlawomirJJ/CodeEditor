@@ -13,6 +13,12 @@ using System.Xml.Linq;
 using static CodeEditor.GlobalVariables;
 using Range = FastColoredTextBoxNS.Range;
 
+///     TO DO       ///
+///     entery
+///     wklejanie tekstu
+///     
+
+
 namespace CodeEditor
 {
     public partial class Form1 : Form
@@ -38,6 +44,7 @@ namespace CodeEditor
         STTokenizer stTokenizer = new STTokenizer();
         List<int> listOfStates = new List<int>();
         FastColoredTextBox textBox;
+        int actualState;
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
             textBox = sender as FastColoredTextBox;
@@ -81,29 +88,52 @@ namespace CodeEditor
 
                             foreach (var token in tokenList.Lista)
                             {
+                                /*
+                                if (token.Typ == STTokenType.ttComment && !token.Tekst.StartsWith("//"))
+                                    actualState = 2;
+                                else if (token.Typ == STTokenType.ttImmConstant && token.BuildInTypeName == "WSTRING")
+                                    actualState = 3;
+                                else
+                                    actualState = 1;    */
+
                                 Place tokenStart = new Place(token.Pozycja, token.LiniaKodu);
                                 Place tokenEnd = new Place(token.Pozycja + token.Tekst.Length, token.LiniaKodu);
                                 Range tokenRange = new Range(fastColoredTextBox1, tokenStart, tokenEnd);
                                 BasicToken lastToken = TokenList.Lista.Last();
 
                                 int lastIndex = textChars.Length - 1;
-                                // dodać sprawdzenie czy komentarz nie jest jednolinijkowy
-                                if (lastToken.Typ == STTokenType.ttComment && textChars[lastIndex - 1] == '*' && textChars[lastIndex - 1] == ')')
+                                if (lastToken.Typ != STTokenType.ttComment && lastToken.Typ != STTokenType.ttImmConstant)
                                 {
                                     AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
 
                                 }
-                                else if (lastToken.Typ == STTokenType.ttComment && (textChars[lastIndex - 1] != '*' || textChars[lastIndex - 1] != ')'))
+                                // dodać sprawdzenie czy komentarz nie jest jednolinijkowy
+                                else if (lastToken.Typ == STTokenType.ttComment && textChars[lastIndex - 1] == '*' && textChars[lastIndex - 1] == ')')
+                                {
+                                    AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
+
+                                }
+                                else if (lastToken.Typ == STTokenType.ttComment && (textChars[lastIndex - 1] != '*' && textChars[lastIndex] != ')') && !lastToken.Tekst.StartsWith("//"))
                                 {
                                     AddNewLineWithStartingState(lineIndex + 1, 2, textBox);
 
                                 }
-                                else if (lastToken.Typ != STTokenType.ttComment) // jeszcze trzeba dodać czy nie jest stringiem
+
+                                // ify dla stringów
+                                /*
+                                else if (lastToken.Typ == STTokenType.ttImmConstant &&  textChars[lastIndex] == '\"')
                                 {
                                     AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
 
+                                }   */
+                                
+                                else if (lastToken.Typ == STTokenType.ttImmConstant && lastToken.BuildInTypeName== "WSTRING" && (textChars[lastIndex] != '\"'))
+                                {
+                                    AddNewLineWithStartingState(lineIndex + 1, 3, textBox);
+
                                 }
-                                // dodać ify dla stringów
+                                else
+                                    AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
 
                                 switch (token.Typ)
                                 {
@@ -111,6 +141,13 @@ namespace CodeEditor
                                         tokenRange.SetStyle(ttIdentifierStyle);
                                         break;
                                     case CPDev.STComp05.STTokenType.ttImmConstant:
+                                        /*
+                                        if (lastToken.BuildInTypeName == "WSTRING")
+                                        {
+                                            StringState(textChars, lineIndex);
+                                        }   */
+                                        
+                                        
                                         tokenRange.SetStyle(ttImmConstantStyle);
                                         break;
                                     case CPDev.STComp05.STTokenType.ttKeyword:
@@ -215,6 +252,65 @@ namespace CodeEditor
 
                         break;
                     case 3:
+                        StringState(textChars, lineIndex);
+                        void StringState(char[] TextM, int LineOffset)
+                        {
+                            Place tokenStart;
+                            Place tokenEnd;
+                            FastColoredTextBoxNS.Range tokenRange;
+                            int nowPos;
+                            int firstIndexOutOfComment = 0;
+                            bool firstCallOutOfComment = true;
+                            bool flag = false;
+                            int positionCharAfterComment = 0;
+                            List<char> listOfCharsAfterComment = new List<char>();
+                            for (nowPos = 0; nowPos < TextM.Length; nowPos++)
+                            {
+
+                                if (TextM[nowPos] == '\"')
+                                {
+                                    tokenStart = new Place(0, LineOffset);
+                                    tokenEnd = new Place(nowPos + 2, LineOffset);
+                                    tokenRange = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
+                                    tokenRange.SetStyle(ttImmConstantStyle);
+                                    flag = true;
+
+                                    AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
+                                }
+                                else if (flag == false)
+                                {
+                                    tokenStart = new Place(0, LineOffset);
+                                    tokenEnd = new Place(nowPos + 1, LineOffset);
+                                    tokenRange = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
+                                    tokenRange.SetStyle(ttImmConstantStyle);
+                                    AddNewLineWithStartingState(lineIndex + 1, 3, textBox);
+                                }
+                                else if (flag == true)
+                                {
+                                    if (firstCallOutOfComment == true)
+                                    {
+                                        firstIndexOutOfComment = nowPos;
+                                        firstCallOutOfComment = false;
+                                    }
+                                    listOfCharsAfterComment.Add(TextM[nowPos]);
+                                    char[] textCharsAfterComment = listOfCharsAfterComment.ToArray();
+                                    TokenList TokenListAfterComment = stTokenizer.TokenizeSTStream(textCharsAfterComment, lineIndex);
+                                    var tokenListAfterDisplacement = DisplacementTokensAfterComment(TokenListAfterComment, firstIndexOutOfComment);
+
+                                    // Utwórz zakres dla obszaru po stringu i wyczyść go
+                                    tokenStart = new Place(firstIndexOutOfComment, LineOffset);
+                                    tokenEnd = new Place(nowPos + 1, LineOffset);
+                                    var rangeAfterComment = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
+
+                                    rangeAfterComment.ClearStyle(ttIdentifierStyle, ttImmConstantStyle, ttKeywordStyle, ttInvalidStyle, ttOperatorStyle, ttDelimiterStyle, ttCommentStyle, ttUnknownStyle, ttDirectiveStyle, ttWhiteSpaceStyle, ttVarLocDescStyle, ttILLabelStyle, ttVCBlockStyle);
+
+                                    ColorizeTokens(tokenListAfterDisplacement);
+                                    positionCharAfterComment++;
+                                    AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
+                                }
+
+                            }
+                        }
                         break;
                     default:
                         break;
@@ -250,8 +346,14 @@ namespace CodeEditor
             }
             return TokenListAfterComment;
         }
-            
-            
+        /*
+        private void fastColoredTextBox1_PreviewKeyDown(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                Tokenize(lineIndex, actualState);
+            }
+        }   */
 
     }
 }
