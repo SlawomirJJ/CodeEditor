@@ -16,7 +16,8 @@ using Range = FastColoredTextBoxNS.Range;
 ///     TO DO       ///
 ///     entery
 ///     wklejanie tekstu
-///     
+///     escape sekwencje
+///     stringi ' '
 
 
 namespace CodeEditor
@@ -45,6 +46,9 @@ namespace CodeEditor
         List<int> listOfStates = new List<int>();
         FastColoredTextBox textBox;
         int actualState;
+        Place caretPlace;
+        Range stringRange;
+        Range commentRange;
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
             textBox = sender as FastColoredTextBox;
@@ -88,19 +92,31 @@ namespace CodeEditor
 
                             foreach (var token in tokenList.Lista)
                             {
-                                /*
+                                
                                 if (token.Typ == STTokenType.ttComment && !token.Tekst.StartsWith("//"))
-                                    actualState = 2;
+                                {
+                                    //actualState = 2;
+                                    AddNewLineWithStartingState(lineIndex + 1, 2, textBox);
+                                }
+                                    
                                 else if (token.Typ == STTokenType.ttImmConstant && token.BuildInTypeName == "WSTRING")
-                                    actualState = 3;
+                                {
+                                    //actualState = 3;
+                                    AddNewLineWithStartingState(lineIndex + 1, 3, textBox);
+                                }    
+                                    
                                 else
-                                    actualState = 1;    */
+                                {
+                                    //actualState = 1;
+                                    AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
+                                }
+                                    
 
                                 Place tokenStart = new Place(token.Pozycja, token.LiniaKodu);
                                 Place tokenEnd = new Place(token.Pozycja + token.Tekst.Length, token.LiniaKodu);
                                 Range tokenRange = new Range(fastColoredTextBox1, tokenStart, tokenEnd);
                                 BasicToken lastToken = TokenList.Lista.Last();
-
+                                /*
                                 int lastIndex = textChars.Length - 1;
                                 if (lastToken.Typ != STTokenType.ttComment && lastToken.Typ != STTokenType.ttImmConstant)
                                 {
@@ -126,7 +142,7 @@ namespace CodeEditor
                                     AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
 
                                 }   */
-                                
+                                /*
                                 else if (lastToken.Typ == STTokenType.ttImmConstant && lastToken.BuildInTypeName== "WSTRING" && (textChars[lastIndex] != '\"'))
                                 {
                                     AddNewLineWithStartingState(lineIndex + 1, 3, textBox);
@@ -134,18 +150,18 @@ namespace CodeEditor
                                 }
                                 else
                                     AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
-
+                                */
                                 switch (token.Typ)
                                 {
                                     case CPDev.STComp05.STTokenType.ttIdentifier:
                                         tokenRange.SetStyle(ttIdentifierStyle);
                                         break;
                                     case CPDev.STComp05.STTokenType.ttImmConstant:
-                                        /*
-                                        if (lastToken.BuildInTypeName == "WSTRING")
+                                        
+                                        if (token.BuildInTypeName == "WSTRING")
                                         {
                                             StringState(textChars, lineIndex);
-                                        }   */
+                                        }   
                                         
                                         
                                         tokenRange.SetStyle(ttImmConstantStyle);
@@ -271,8 +287,8 @@ namespace CodeEditor
                                 {
                                     tokenStart = new Place(0, LineOffset);
                                     tokenEnd = new Place(nowPos + 2, LineOffset);
-                                    tokenRange = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
-                                    tokenRange.SetStyle(ttImmConstantStyle);
+                                    stringRange = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
+                                    stringRange.SetStyle(ttImmConstantStyle);
                                     flag = true;
 
                                     AddNewLineWithStartingState(lineIndex + 1, 1, textBox);
@@ -281,9 +297,10 @@ namespace CodeEditor
                                 {
                                     tokenStart = new Place(0, LineOffset);
                                     tokenEnd = new Place(nowPos + 1, LineOffset);
-                                    tokenRange = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
-                                    tokenRange.SetStyle(ttImmConstantStyle);
+                                    stringRange = new FastColoredTextBoxNS.Range(fastColoredTextBox1, tokenStart, tokenEnd);
+                                    stringRange.SetStyle(ttImmConstantStyle);
                                     AddNewLineWithStartingState(lineIndex + 1, 3, textBox);
+                                    caretPlace = fastColoredTextBox1.Selection.Start;
                                 }
                                 else if (flag == true)
                                 {
@@ -346,14 +363,8 @@ namespace CodeEditor
             }
             return TokenListAfterComment;
         }
-        /*
-        private void fastColoredTextBox1_PreviewKeyDown(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == (char)Keys.Enter)
-            {
-                Tokenize(lineIndex, actualState);
-            }
-        }   */
+        
+
 
     }
 }
