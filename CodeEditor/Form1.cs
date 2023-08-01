@@ -101,10 +101,14 @@ namespace CodeEditor
 
             //obsługa zdarzenia TextChanged
             fastColoredTextBox1.TextChanged += new EventHandler<TextChangedEventArgs>(fastColoredTextBox1_TextChanged);
+            fastColoredTextBox1.LineInserted += FastColoredTextBox1_LineInserted;
+            fastColoredTextBox1.LineRemoved += FastColoredTextBox1_LineRemoved;
             fastColoredTextBox1.Dock = DockStyle.Fill;
             fastColoredTextBox1.AutoCompleteBrackets = true;
 
         }
+
+
         private void CloseTabButton_Click(object sender, EventArgs e)
         {
             Button closeButton = (Button)sender;
@@ -369,6 +373,8 @@ namespace CodeEditor
 
                 //obsługa zdarzenia TextChanged
                 fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(fastColoredTextBox1_TextChanged);
+                fastColoredTextBox1.LineInserted += FastColoredTextBox1_LineInserted;
+                fastColoredTextBox1.LineRemoved += FastColoredTextBox1_LineRemoved;
                 fastColoredTextBox1.Dock = DockStyle.Fill;
                 fastColoredTextBox1.AutoCompleteBrackets = true;
             }
