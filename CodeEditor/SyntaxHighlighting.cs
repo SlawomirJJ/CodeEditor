@@ -49,6 +49,7 @@ namespace CodeEditor
         Place caretPlace;
         Range stringRange;
         Range commentRange;
+        Dictionary<FastColoredTextBox, List<TokenizerLineState>> lineStateDictionary;
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
             textBox = sender as FastColoredTextBox;
@@ -67,8 +68,68 @@ namespace CodeEditor
             }
         }
 
+        private void FastColoredTextBox1_LineRemoved(object sender, LineRemovedEventArgs e)
+        {
+            textBox = (FastColoredTextBox)sender;
+            List<TokenizerLineState> vls;
+            if (lineStateDictionary.TryGetValue(textBox, out vls))
+            {
+                vls.RemoveRange(e.Index, e.Count);
+            }
+            else
+            {
+                // Nie powinno się to zdarzyć
+                new InvalidOperationException("Usuwanie linii z nieistniejącego kolorowania");
+            }
+            RunUpdateTokenizerFromLine(e.Index, vls, textBox);
+        }
+
+        private void FastColoredTextBox1_LineInserted(object sender, LineInsertedEventArgs e)
+        {
+            textBox = (FastColoredTextBox)sender;
+            List<TokenizerLineState> vls;
+            if (lineStateDictionary.TryGetValue(textBox, out vls))
+            {
+                vls.InsertRange(e.Index, new TokenizerLineState[e.Count]);
+                RunUpdateTokenizerFromLine(e.Index, vls, textBox);
+            }
+            else
+            {
+                vls = new List<TokenizerLineState>();
+                vls.AddRange(new TokenizerLineState[textBox.LinesCount]);
+                lineStateDictionary.Add(textBox, vls);
+                RunUpdateTokenizerFromLine(0, vls, textBox);
+            }            
+        }
+
+        void RunUpdateTokenizerFromLine(int lineIndex, List<TokenizerLineState> stany, FastColoredTextBox textBox)
+        {
+            TokenizerLineState beginState;
+            if (lineIndex -1 <= 0)
+                beginState = TokenizerLineState.tlsDefault;
+            else
+                beginState = stany[lineIndex - 1];
+
+            bool cont;
+            do
+            {
+                cont = true;
+                TokenizerLineState endState = TokenizeSingleLine(lineIndex, beginState, textBox);
+                if (endState == stany[lineIndex])
+                    cont = false;
+                else
+                {
+                    beginState = stany[lineIndex] = endState;
+                    lineIndex++;
+                }
+            }
+            while (cont);
+        }
+
+
         void Tokenize(int lineIndex, int state)
         {
+#if TO_JEST_TO_WYRZUCENIA_CHOCIAZ_MOZE_INSPIROWAC
             if (lineIndex >= 0 && lineIndex < textBox.LinesCount)
             {
                 // Utwórz zakres dla całej linii
@@ -334,6 +395,7 @@ namespace CodeEditor
                 }
 
             }
+#endif
         }
         /// <summary>
         /// Adding new line with starting State or if line already exist change state in existng line 
@@ -366,5 +428,17 @@ namespace CodeEditor
         
 
 
+    }
+
+    enum TokenizerLineState
+    {
+        tlsUndefined = 0,
+        tlsDefault = 1,
+        tlsComment = 2,
+        tlsString = 3,
+        tlsDirective = 4,
+        tlsVMAsm = 5,
+        tlsSpecialProc = 6,
+        tlsVerifDirect = 7
     }
 }
