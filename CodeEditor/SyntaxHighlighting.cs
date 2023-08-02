@@ -1,4 +1,5 @@
 ﻿using AutocompleteMenuNS;
+using CodeEditor.SyntaxHighlighting.TokenizeLine;
 using CPDev.STComp05;
 using FastColoredTextBoxNS;
 using Newtonsoft.Json.Linq;
@@ -13,11 +14,6 @@ using System.Xml.Linq;
 using static CodeEditor.GlobalVariables;
 using Range = FastColoredTextBoxNS.Range;
 
-///     TO DO       ///
-///     entery
-///     wklejanie tekstu
-///     escape sekwencje
-///     stringi ' '
 
 
 namespace CodeEditor
@@ -39,8 +35,8 @@ namespace CodeEditor
         public Style ttVarLocDescStyle = new TextStyle(Brushes.Yellow, null, FontStyle.Regular);// Opis lokalizacji zmiennej
         public Style ttILLabelStyle = new TextStyle(Brushes.Pink, null, FontStyle.Regular);// Etykieta IL
         public Style ttVCBlockStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
-        
-        
+
+
 
         STTokenizer stTokenizer = new STTokenizer();
         List<int> listOfStates = new List<int>();
@@ -49,7 +45,9 @@ namespace CodeEditor
         Place caretPlace;
         Range stringRange;
         Range commentRange;
-        Dictionary<FastColoredTextBox, List<TokenizerLineState>> lineStateDictionary;
+        //Dictionary<FastColoredTextBox, List<TokenizerLineState>> lineStateDictionary;
+        Dictionary<FastColoredTextBox, List<TokenizerLineState>> lineStateDictionary = new Dictionary<FastColoredTextBox, List<TokenizerLineState>>();
+
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
             textBox = sender as FastColoredTextBox;
@@ -88,6 +86,7 @@ namespace CodeEditor
         {
             textBox = (FastColoredTextBox)sender;
             List<TokenizerLineState> vls;
+            //lineStateDictionary.Add(textBox, TokenizerLineState.tlsComment);
             if (lineStateDictionary.TryGetValue(textBox, out vls))
             {
                 vls.InsertRange(e.Index, new TokenizerLineState[e.Count]);
@@ -125,8 +124,8 @@ namespace CodeEditor
             }
             while (cont);
         }
-
-
+        
+        
         void Tokenize(int lineIndex, int state)
         {
 #if TO_JEST_TO_WYRZUCENIA_CHOCIAZ_MOZE_INSPIROWAC
@@ -427,10 +426,10 @@ namespace CodeEditor
         }
         
 
-
+        
     }
 
-    enum TokenizerLineState
+    public enum TokenizerLineState
     {
         tlsUndefined = 0,
         tlsDefault = 1,
