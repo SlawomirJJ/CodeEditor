@@ -91,6 +91,12 @@ namespace CodeEditor
                     case CPDev.STComp05.STTokenType.ttVCBlock:
                         tokenRange.SetStyle(ttVCBlockStyle);
                         break;
+                    case STTokenType.ttDirectiveVMASM:
+                        tokenRange.SetStyle(ttDirVMASMStyle);
+                        break;
+                    case STTokenType.ttDirectiveSpecial:
+                        tokenRange.SetStyle(ttDirSpecStyle);
+                        break;
                     default:
                         break;
 
@@ -188,8 +194,13 @@ namespace CodeEditor
                     tpToken = STTokenType.ttComment;
                     break;
                 case TokenizerLineState.tlsDirective:
-                case TokenizerLineState.tlsVMAsm:
                     tpToken = STTokenType.ttDirective;
+                    break;
+                case TokenizerLineState.tlsVMAsm:
+                    tpToken = STTokenType.ttDirectiveVMASM;
+                    break;
+                case TokenizerLineState.tlsSpecialProc:
+                    tpToken = STTokenType.ttDirectiveSpecial;
                     break;
                 default:
                     //This not happen
@@ -207,6 +218,7 @@ namespace CodeEditor
             int nowPos = 0;
             int StartAt;
             bool Chdone;
+            // TODO: Tę wartość TokenizerOptions trzeba przenieść ze skojarzonego edytora, aby dopasować kolorowanie składni do obsługiwanych cech
             int TokenizerOptions = 0;
             StringBuilder sb = new StringBuilder(1);
             while (nowPos < TextM.Length)
@@ -429,6 +441,8 @@ namespace CodeEditor
                         }
                         if (TextM[nowPos] == '@' && ((TokenizerOptions & STTokenizer.toEnableParsingVCGBlocks) != 0))
                             DirectiveVariant = 2;
+                        if (TextM[nowPos] == '#')
+                            DirectiveVariant = 4;
                     }
                     int comment = 1;
                     while (nowPos < TextM.Length && comment > 0)
@@ -461,7 +475,13 @@ namespace CodeEditor
                             break;
                         case 3:
                             {
-                                BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttDirective, StartAt);
+                                BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttDirectiveVMASM, StartAt);
+                                bbt.LiniaKodu = LineOffset;
+                            }
+                            break;
+                        case 4:
+                            {
+                                BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttDirectiveSpecial, StartAt);
                                 bbt.LiniaKodu = LineOffset;
                             }
                             break;
@@ -487,6 +507,9 @@ namespace CodeEditor
                                 break;
                             case 3:
                                 finalState = TokenizerLineState.tlsVMAsm;
+                                break;
+                            case 4:
+                                finalState = TokenizerLineState.tlsSpecialProc;
                                 break;
                             default:
                                 finalState = TokenizerLineState.tlsComment;

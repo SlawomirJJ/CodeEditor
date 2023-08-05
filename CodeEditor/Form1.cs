@@ -127,7 +127,7 @@ namespace CodeEditor
                 // open file
                 StreamReader sr = new StreamReader(openFileDialog.FileName);
                 // place file text to text box
-                //fastColoredTextBox1.Text = sr.ReadToEnd();
+                fastColoredTextBox1.Text = sr.ReadToEnd();
                 // close file
                 sr.Close();
                 // text of this window = path of currently opened file
