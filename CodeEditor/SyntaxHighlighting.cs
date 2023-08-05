@@ -1,5 +1,4 @@
 ﻿using AutocompleteMenuNS;
-using CodeEditor.SyntaxHighlighting.TokenizeLine;
 using CPDev.STComp05;
 using FastColoredTextBoxNS;
 using Newtonsoft.Json.Linq;
@@ -103,7 +102,7 @@ namespace CodeEditor
         void RunUpdateTokenizerFromLine(int lineIndex, List<TokenizerLineState> stany, FastColoredTextBox textBox)
         {
             TokenizerLineState beginState;
-            if (lineIndex -1 <= 0)
+            if (lineIndex - 1 <= 0)
                 beginState = TokenizerLineState.tlsDefault;
             else
                 beginState = stany[lineIndex - 1];
@@ -433,19 +432,6 @@ namespace CodeEditor
         tlsUndefined = 0,
         tlsDefault = 1,
         tlsComment = 2,
-        tlsString = 3,
-        tlsDirective = 4,
-        tlsVMAsm = 5,
-        tlsSpecialProc = 6,
-        tlsVerifDirect = 7
-    }
-
-    enum TokenizerLineState
-    {
-        tlsUndefined = 0,
-        tlsDefault = 1,
-        tlsComment = 2,
-        tlsString = 3,
         tlsDirective = 4,
         tlsVMAsm = 5,
         tlsSpecialProc = 6,

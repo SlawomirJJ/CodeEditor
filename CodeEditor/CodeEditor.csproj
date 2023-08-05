@@ -444,8 +444,6 @@
     <Compile Include="SyntaxHighlighting.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SyntaxHighlighting\TokenizeLine\Strings.cs" />
-    <Compile Include="SyntaxHighlighting\TokenizeLine\TokenizeLine.cs" />
     <Compile Include="Tokenizer.cs" />
     <Compile Include="SyntaxHighlighting\ColorizeLine.cs">
       <SubType>Form</SubType>
@@ -503,6 +501,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="SyntaxHighlighting\TokenizeLine\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Fody.6.6.4\build\Fody.targets" Condition="Exists('..\packages\Fody.6.6.4\build\Fody.targets')" />
