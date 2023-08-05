@@ -444,7 +444,12 @@
     <Compile Include="SyntaxHighlighting.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="SyntaxHighlighting\TokenizeLine\Strings.cs" />
+    <Compile Include="SyntaxHighlighting\TokenizeLine\TokenizeLine.cs" />
     <Compile Include="Tokenizer.cs" />
+    <Compile Include="SyntaxHighlighting\ColorizeLine.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
