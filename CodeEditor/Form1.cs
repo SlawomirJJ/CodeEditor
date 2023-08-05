@@ -428,27 +428,6 @@ namespace CodeEditor
             }
         }
 
-        private void fastColoredTextBox1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            Place caretPlace = fastColoredTextBox1.Selection.Start;
-            if (stringRange!=null)
-            {
-                if (stringRange.Contains(caretPlace))
-                {
-                    AddNewLineWithStartingState(caretPlace.iLine+1, 3, textBox);
-                }
-                else
-                    AddNewLineWithStartingState(caretPlace.iLine+1, 1, textBox);
-            }
-            
-        }
-
-
-
-
-
-
-
         /*
         private void fastColoredTextBox1_AutoIndentNeeded(object sender, AutoIndentEventArgs e)
         {

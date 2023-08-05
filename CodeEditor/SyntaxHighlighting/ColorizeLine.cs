@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -17,6 +18,8 @@ namespace CodeEditor
     {
         public TokenizerLineState TokenizeSingleLine(int lineIndex, TokenizerLineState beginState, FastColoredTextBox textBox)
         {
+            string s1 = String.Format("Uruchamiam tokenizer dla linii: {0}, stanPocz: {1}", lineIndex, beginState);
+
             // Utwórz zakres dla całej linii
             FastColoredTextBoxNS.Range range = textBox.GetLine(lineIndex);
 
@@ -94,6 +97,7 @@ namespace CodeEditor
                 }
 
             }
+            System.Diagnostics.Debug.WriteLine(s1 + String.Format(", stanKońc: {0}, tokenów: {1}", beginState, tokenlist.Lista.Count));
             return beginState;
         }
 
@@ -108,17 +112,9 @@ namespace CodeEditor
                     beginState = DefaultTokenizer(TextM, lineOffset, out tokenlist);
                     break;
                 case TokenizerLineState.tlsComment:
-                    beginState = EndCommentTokenize(TextM, lineOffset, out tokenlist, beginState);
-                    break;
                 case TokenizerLineState.tlsDirective:
-                    beginState = EndCommentTokenize(TextM, lineOffset, out tokenlist, beginState);
-                    break;
                 case TokenizerLineState.tlsVMAsm:
-                    beginState = EndCommentTokenize(TextM, lineOffset, out tokenlist, beginState);
-                    break;
                 case TokenizerLineState.tlsSpecialProc:
-                    beginState = EndCommentTokenize(TextM, lineOffset, out tokenlist, beginState);
-                    break;
                 case TokenizerLineState.tlsVerifDirect:
                     beginState = EndCommentTokenize(TextM, lineOffset, out tokenlist, beginState);
                     break;
@@ -139,11 +135,11 @@ namespace CodeEditor
                     int ePos = nowPos + 1;
                     if(ePos < TextM.Length && TextM[ePos] == ')')
                     {
-                        nowPos = ePos;
+                        nowPos = ePos + 1;
                         Chdone = true;
                         STTokenType tpToken;
                         tpToken = ChangeStateToToken(beginState);
-                        BasicToken bt = new BasicToken(TextM.Substring(0, ePos), tpToken, 0);
+                        BasicToken bt = new BasicToken(TextM.Substring(0, nowPos), tpToken, 0);
                         bt.LiniaKodu = LineOffset;
                         tokenlist.Lista.Add(bt);
                         break;
@@ -154,10 +150,14 @@ namespace CodeEditor
             TokenizerLineState endLineState;
             if (nowPos < TextM.Length)
             {
-                string rest = TextM.Substring(0, nowPos);
+                string rest = TextM.Substring(nowPos);
                 TokenList subTokens;
                 endLineState = DefaultTokenizer(rest, LineOffset, out subTokens);
-                tokenlist.Lista.AddRange(subTokens.Lista);
+                foreach (BasicToken bt in subTokens.Lista)
+                {
+                    bt.Pozycja += nowPos;
+                    tokenlist.Lista.Add(bt);
+                }
             }
             else
             {
@@ -290,7 +290,7 @@ namespace CodeEditor
                     if (nowPos - StartAt > 0)
                     {
                         sb.Append(TextM, StartAt, nowPos - StartAt);
-                        BasicToken bt = new BasicToken(sb.ToString(), STTokenType.ttImmConstant, StartAt);
+                        tokenlist.AddAutoDetect(sb.ToString(), StartAt, LineOffset, TokenizerOptions);
                         sb.Remove(0, sb.Length);
                         Chdone = true;
                     }
@@ -493,237 +493,223 @@ namespace CodeEditor
                                 break;
                         }
                     }
-                    /**>> Nawiasy <<**/
+                }
+                /**>> Nawiasy <<**/
+                StartAt = nowPos;
+                if (nowPos < TextM.Length && TextM[nowPos] == '(')
+                {
+                    BasicToken bbt = tokenlist.AddNewTokenType("(", STTokenType.ttDelimiter, nowPos);
+                    bbt.LiniaKodu = LineOffset;
+                    nowPos++;
+                    Chdone = true;
+                }
+                if (nowPos < TextM.Length && TextM[nowPos] == ')')
+                {
+                    BasicToken bbt = tokenlist.AddNewTokenType(")", STTokenType.ttDelimiter, nowPos);
+                    bbt.LiniaKodu = LineOffset;
+                    nowPos++;
+                    Chdone = true;
+                }
+                if (nowPos < TextM.Length && TextM[nowPos] == '[')
+                {
+                    BasicToken bbt = tokenlist.AddNewTokenType("[", STTokenType.ttDelimiter, nowPos);
+                    bbt.LiniaKodu = LineOffset;
+                    nowPos++;
+                    Chdone = true;
+                }
+                if (nowPos < TextM.Length && TextM[nowPos] == ']')
+                {
+                    BasicToken bbt = tokenlist.AddNewTokenType("]", STTokenType.ttDelimiter, nowPos);
+                    bbt.LiniaKodu = LineOffset;
+                    nowPos++;
+                    Chdone = true;
+                }
+                /* Pojedyncze znaki */
+                if (nowPos < TextM.Length && (TextM[nowPos] == ';' || TextM[nowPos] == ','))
+                {
+                    sb.Append(TextM, nowPos, 1);
+                    BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttDelimiter, nowPos);
+                    bbt.LiniaKodu = LineOffset;
+                    sb.Remove(0, sb.Length);
+                    nowPos++;
+                    Chdone = true;
+                }
+                if (((TokenizerOptions & STTokenizer.toUseLRBracketsAsDelim) != 0) && (nowPos < TextM.Length) && (TextM[nowPos] == '{' || TextM[nowPos] == '}'))
+                {
+                    sb.Append(TextM, nowPos, 1);
+                    BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttDelimiter, nowPos);
+                    bbt.LiniaKodu = LineOffset;
+                    sb.Remove(0, sb.Length);
+                    nowPos++;
+                    Chdone = true;
+                }
+                if (nowPos < TextM.Length && TextM[nowPos] == '%')
+                {
                     StartAt = nowPos;
-                    if (nowPos < TextM.Length && TextM[nowPos] == '(')
-                    {
-                        BasicToken bbt = tokenlist.AddNewTokenType("(", STTokenType.ttDelimiter, nowPos);
-                        bbt.LiniaKodu = LineOffset;
+                    nowPos++;
+                    while (nowPos < TextM.Length && !STCharConsts.IsEndVarLocDesc(TextM[nowPos]))
                         nowPos++;
-                        Chdone = true;
-                    }
-                    if (nowPos < TextM.Length && TextM[nowPos] == ')')
+                    if (nowPos - StartAt > 0)
                     {
-                        BasicToken bbt = tokenlist.AddNewTokenType(")", STTokenType.ttDelimiter, nowPos);
-                        bbt.LiniaKodu = LineOffset;
-                        nowPos++;
-                        Chdone = true;
-                    }
-                    if (nowPos < TextM.Length && TextM[nowPos] == '[')
-                    {
-                        BasicToken bbt = tokenlist.AddNewTokenType("[", STTokenType.ttDelimiter, nowPos);
-                        bbt.LiniaKodu = LineOffset;
-                        nowPos++;
-                        Chdone = true;
-                    }
-                    if (nowPos < TextM.Length && TextM[nowPos] == ']')
-                    {
-                        BasicToken bbt = tokenlist.AddNewTokenType("]", STTokenType.ttDelimiter, nowPos);
-                        bbt.LiniaKodu = LineOffset;
-                        nowPos++;
-                        Chdone = true;
-                    }
-                    /* Pojedyncze znaki */
-                    if (nowPos < TextM.Length && (TextM[nowPos] == ';' || TextM[nowPos] == ','))
-                    {
-                        sb.Append(TextM, nowPos, 1);
-                        BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttDelimiter, nowPos);
-                        bbt.LiniaKodu = LineOffset;
+                        sb.Append(TextM, StartAt, nowPos - StartAt);
+                        BasicToken bt = new BasicToken(sb.ToString(), STTokenType.ttVarLocDesc, StartAt);
+                        bt.LiniaKodu = LineOffset;
                         sb.Remove(0, sb.Length);
-                        nowPos++;
+                        tokenlist.Lista.Add(bt);
                         Chdone = true;
                     }
-                    if (((TokenizerOptions & STTokenizer.toUseLRBracketsAsDelim) != 0) && (nowPos < TextM.Length) && (TextM[nowPos] == '{' || TextM[nowPos] == '}'))
+                    StartAt = nowPos;
+                }
+                /**>> Teksty <<**/
+                StartAt = nowPos;
+                if (nowPos < TextM.Length && (TextM[nowPos] == '\'' || TextM[nowPos] == '\"'))
+                {
+                    char beginStringCharacter = TextM[nowPos];
+                    sb.Append(beginStringCharacter);
+                    nowPos++;
+                    while (nowPos < TextM.Length && TextM[nowPos] != beginStringCharacter)
                     {
-                        sb.Append(TextM, nowPos, 1);
-                        BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttDelimiter, nowPos);
-                        bbt.LiniaKodu = LineOffset;
-                        sb.Remove(0, sb.Length);
-                        nowPos++;
-                        Chdone = true;
-                    }
-                    if (nowPos < TextM.Length && TextM[nowPos] == '%')
-                    {
-                        StartAt = nowPos;
-                        nowPos++;
-                        while (nowPos < TextM.Length && !STCharConsts.IsEndVarLocDesc(TextM[nowPos]))
-                            nowPos++;
-                        if (nowPos - StartAt > 0)
+                        char az = TextM[nowPos];
+                        sb.Append(az);
+                        if (az == '$')
                         {
-                            sb.Append(TextM, StartAt, nowPos - StartAt);
-                            BasicToken bt = new BasicToken(sb.ToString(), STTokenType.ttVarLocDesc, StartAt);
-                            bt.LiniaKodu = LineOffset;
-                            sb.Remove(0, sb.Length);
-                            tokenlist.Lista.Add(bt);
-                            Chdone = true;
+                            nowPos++;
+                            char ay = '\u0000';
+                            if (nowPos < TextM.Length)
+                            {
+                                ay = TextM[nowPos];
+                                sb.Append(ay);
+                            }
                         }
-                        StartAt = nowPos;
+                        nowPos++;
                     }
-                    /**>> Teksty <<**/
-                    StartAt = nowPos;
-                    if (nowPos < TextM.Length && (TextM[nowPos] == '\'' || TextM[nowPos] == '\"'))
+                    if (nowPos < TextM.Length && TextM[nowPos] == beginStringCharacter)
                     {
-                        char beginStringCharacter = TextM[nowPos];
                         sb.Append(beginStringCharacter);
                         nowPos++;
-                        while (nowPos + 1 < TextM.Length && TextM[nowPos] == beginStringCharacter && TextM[nowPos + 1] == beginStringCharacter)
-                        {
-                            sb.Append(beginStringCharacter);
-                            nowPos += 2;
-                        }
-                        while (nowPos < TextM.Length && TextM[nowPos] != beginStringCharacter)
-                        {
-                            char az = TextM[nowPos];
-                            sb.Append(az);
-                            if (az == '$')
-                            {
-                                nowPos++;
-                                char ay = '\u0000';
-                                if (nowPos < TextM.Length)
-                                {
-                                    ay = TextM[nowPos];
-                                    sb.Append(ay);
-                                }
-                            }
-                            nowPos++;
-                        }
-                        nowPos++;
-                        if (nowPos < TextM.Length)
-                            sb.Append(beginStringCharacter);
-                        else
-                            finalState = TokenizerLineState.tlsDefault;
-
-                        BasicToken bbt = new BasicToken(sb.ToString(), STTokenType.ttImmConstant, StartAt);
-                        bbt.BuildInTypeName = beginStringCharacter == '\'' ? "STRING" : "WSTRING";
-                        bbt.LiniaKodu = LineOffset;
-                        tokenlist.Lista.Add(bbt);
-
-                        sb.Remove(0, sb.Length);
-                        Chdone = true;
                     }
 
-                    /**>> Liczby dziesiętne, separatory pól, wielokropek  <<**/
-                    if (nowPos < TextM.Length && TextM[nowPos] == '.')
-                    {
-                        if ((nowPos + 1 < TextM.Length) && (TextM[nowPos + 1] == '.'))
-                        {
-                            BasicToken bbt = tokenlist.AddNewTokenType("..", STTokenType.ttDelimiter, nowPos);
-                            bbt.LiniaKodu = LineOffset;
-                            nowPos += 2;
-                            Chdone = true;
-                        }
-                        else
-                        {
-                            BasicToken tok_1;
-                            if (tokenlist.Lista.Count > 0)
-                            {
-                                tok_1 = tokenlist.Lista[tokenlist.Lista.Count - 1];
-                                if (tok_1.IsIntConst())
-                                {
-                                    //parsuj dalej aż do napotkania końca liczby rzeczywistej
-                                    bool has_exponent = false;
-                                    bool has_exp_sign = false;
-                                    bool do_this = true;
-                                    bool loc_valid = true;
-                                    string valid_chars = "_1234567890eE-+";
-                                    StartAt = nowPos - tok_1.Tekst.Length;
-                                    nowPos++;
-                                    while (nowPos < TextM.Length && do_this && valid_chars.IndexOf(TextM[nowPos]) >= 0)
-                                    {
-                                        if (TextM[nowPos] == 'E' || TextM[nowPos] == 'e')
-                                        {
-                                            if (has_exponent)
-                                            {
-                                                do_this = false;
-                                                loc_valid = false;
-                                            }
-                                            else
-                                                has_exponent = true;
-                                        }
-                                        if (TextM[nowPos] == '-' || TextM[nowPos] == '+')
-                                        {
-                                            if (has_exponent)
-                                            {
-                                                if (has_exp_sign)
-                                                    do_this = false;
-                                                else
-                                                {
-                                                    has_exp_sign = true;
-                                                    //?? zabezpieczenie przed np 1.23E+ 
-                                                }
-                                            }
-                                            else
-                                                do_this = false;
-                                        }
+                    BasicToken bbt = new BasicToken(sb.ToString(), STTokenType.ttImmConstant, StartAt);
+                    bbt.BuildInTypeName = beginStringCharacter == '\'' ? "STRING" : "WSTRING";
+                    bbt.LiniaKodu = LineOffset;
+                    tokenlist.Lista.Add(bbt);
 
-                                        if (do_this)
-                                            nowPos++;
-                                    }
-                                    //nowPos++;
-                                    if (nowPos - StartAt > 0)
+                    sb.Remove(0, sb.Length);
+                    Chdone = true;
+                }
+
+                /**>> Liczby dziesiętne, separatory pól, wielokropek  <<**/
+                if (nowPos < TextM.Length && TextM[nowPos] == '.')
+                {
+                    if ((nowPos + 1 < TextM.Length) && (TextM[nowPos + 1] == '.'))
+                    {
+                        BasicToken bbt = tokenlist.AddNewTokenType("..", STTokenType.ttDelimiter, nowPos);
+                        bbt.LiniaKodu = LineOffset;
+                        nowPos += 2;
+                        Chdone = true;
+                    }
+                    else
+                    {
+                        BasicToken tok_1;
+                        if (tokenlist.Lista.Count > 0)
+                        {
+                            tok_1 = tokenlist.Lista[tokenlist.Lista.Count - 1];
+                            if (tok_1.IsIntConst())
+                            {
+                                //parsuj dalej aż do napotkania końca liczby rzeczywistej
+                                bool has_exponent = false;
+                                bool has_exp_sign = false;
+                                bool do_this = true;
+                                bool loc_valid = true;
+                                string valid_chars = "_1234567890eE-+";
+                                StartAt = nowPos - tok_1.Tekst.Length;
+                                nowPos++;
+                                while (nowPos < TextM.Length && do_this && valid_chars.IndexOf(TextM[nowPos]) >= 0)
+                                {
+                                    if (TextM[nowPos] == 'E' || TextM[nowPos] == 'e')
                                     {
-                                        sb.Append(TextM, StartAt, nowPos - StartAt);
-                                        tok_1.Tekst = sb.ToString();
-                                        sb.Remove(0, sb.Length);
-                                        if (loc_valid)
+                                        if (has_exponent)
                                         {
-                                            tok_1.Typ = STTokenType.ttImmConstant;
-                                            tok_1.BuildInTypeName = "REAL";
+                                            do_this = false;
+                                            loc_valid = false;
                                         }
                                         else
-                                            tok_1.Typ = STTokenType.ttInvalid;
+                                            has_exponent = true;
+                                    }
+                                    if (TextM[nowPos] == '-' || TextM[nowPos] == '+')
+                                    {
+                                        if (has_exponent)
+                                        {
+                                            if (has_exp_sign)
+                                                do_this = false;
+                                            else
+                                            {
+                                                has_exp_sign = true;
+                                                //?? zabezpieczenie przed np 1.23E+ 
+                                            }
+                                        }
+                                        else
+                                            do_this = false;
+                                    }
+
+                                    if (do_this)
+                                        nowPos++;
+                                }
+                                //nowPos++;
+                                if (nowPos - StartAt > 0)
+                                {
+                                    sb.Append(TextM, StartAt, nowPos - StartAt);
+                                    tok_1.Tekst = sb.ToString();
+                                    sb.Remove(0, sb.Length);
+                                    if (loc_valid)
+                                    {
+                                        tok_1.Typ = STTokenType.ttImmConstant;
+                                        tok_1.BuildInTypeName = "REAL";
+                                    }
+                                    else
+                                        tok_1.Typ = STTokenType.ttInvalid;
+                                    Chdone = true;
+                                }
+                                StartAt = nowPos;
+                            }
+                            else
+                            {
+                                int sub = 1;
+                                while (tokenlist.Lista.Count >= sub)
+                                {
+                                    tok_1 = tokenlist.Lista[tokenlist.Lista.Count - sub];
+                                    if (tok_1.Typ == STTokenType.ttComment || tok_1.Typ == STTokenType.ttWhiteSpace)
+                                        sub++;
+                                    else
+                                        break;
+                                }
+                                if (tokenlist.Lista.Count >= sub)
+                                {
+                                    if (tok_1.Typ == STTokenType.ttIdentifier)
+                                    {
+                                        sb.Append(TextM, nowPos, 1);
+                                        BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttOperator, nowPos);
+                                        bbt.LiniaKodu = LineOffset;
+                                        sb.Remove(0, sb.Length);
+                                        nowPos++;
                                         Chdone = true;
                                     }
-                                    StartAt = nowPos;
-                                }
-                                else
-                                {
-                                    int sub = 1;
-                                    while (tokenlist.Lista.Count >= sub)
+                                    else if (tok_1.Typ == STTokenType.ttDelimiter)
                                     {
-                                        tok_1 = tokenlist.Lista[tokenlist.Lista.Count - sub];
-                                        if (tok_1.Typ == STTokenType.ttComment || tok_1.Typ == STTokenType.ttWhiteSpace)
-                                            sub++;
-                                        else
-                                            break;
-                                    }
-                                    if (tokenlist.Lista.Count >= sub)
-                                    {
-                                        if (tok_1.Typ == STTokenType.ttIdentifier)
+                                        sb.Append(TextM, nowPos, 1);
+                                        if (tok_1.Tekst.Equals("]") || tok_1.Tekst.Equals(")"))
                                         {
-                                            sb.Append(TextM, nowPos, 1);
                                             BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttOperator, nowPos);
                                             bbt.LiniaKodu = LineOffset;
-                                            sb.Remove(0, sb.Length);
-                                            nowPos++;
-                                            Chdone = true;
-                                        }
-                                        else if (tok_1.Typ == STTokenType.ttDelimiter)
-                                        {
-                                            sb.Append(TextM, nowPos, 1);
-                                            if (tok_1.Tekst.Equals("]") || tok_1.Tekst.Equals(")"))
-                                            {
-                                                BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttOperator, nowPos);
-                                                bbt.LiniaKodu = LineOffset;
-                                            }
-                                            else
-                                            {
-                                                BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttInvalid, nowPos);
-                                                bbt.LiniaKodu = LineOffset;
-                                            }
-                                            sb.Remove(0, sb.Length);
-                                            nowPos++;
-                                            Chdone = true;
                                         }
                                         else
                                         {
-                                            sb.Append(TextM, nowPos, 1);
                                             BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttInvalid, nowPos);
                                             bbt.LiniaKodu = LineOffset;
-                                            sb.Remove(0, sb.Length);
-                                            nowPos++;
-                                            Chdone = true;
                                         }
+                                        sb.Remove(0, sb.Length);
+                                        nowPos++;
+                                        Chdone = true;
                                     }
                                     else
                                     {
@@ -735,148 +721,15 @@ namespace CodeEditor
                                         Chdone = true;
                                     }
                                 }
-                            }
-                            else
-                            {
-                                sb.Append(TextM, nowPos, 1);
-                                BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttInvalid, nowPos);
-                                bbt.LiniaKodu = LineOffset;
-                                sb.Remove(0, sb.Length);
-                                nowPos++;
-                                Chdone = true;
-                            }
-                        }
-                    }
-                    /**>> Liczby o innej podstawie oraz stałe <<**/
-                    if (nowPos < TextM.Length && TextM[nowPos] == '#')
-                    {
-                        BasicToken tok_1;
-                        if (tokenlist.Lista.Count > 0)
-                        {
-                            tok_1 = tokenlist.Lista[tokenlist.Lista.Count - 1];
-                            if (tok_1.IsIntConst())
-                            {
-                                StringBuilder Bvalid_chars = new StringBuilder();
-                                int conv_base;
-                                try
+                                else
                                 {
-                                    conv_base = Math.Abs(Convert.ToInt32(tok_1.Tekst));
-                                }
-                                catch (System.FormatException)
-                                {
-                                    conv_base = 0;
-                                }
-                                bool limited = false;
-                                if (conv_base > 36)
-                                {
-                                    conv_base = 36;
-                                    limited = true;
-                                }
-                                for (int cc = 0; cc < conv_base; cc++)
-                                {
-                                    if (cc > 9)
-                                    {
-                                        Bvalid_chars.Append(Convert.ToChar(cc - 10 + 0x41));
-                                        Bvalid_chars.Append(Convert.ToChar(cc - 10 + 0x61));
-                                    }
-                                    else
-                                        Bvalid_chars.Append(Convert.ToString(cc));
-                                }
-
-                                if (Bvalid_chars.Length > 0)
-                                    Bvalid_chars.Append('_');
-
-                                StartAt = nowPos - tok_1.Tekst.Length;
-                                nowPos++;
-                                string valid_chars = Bvalid_chars.ToString();
-                                while (nowPos < TextM.Length && valid_chars.IndexOf(TextM[nowPos]) >= 0)
+                                    sb.Append(TextM, nowPos, 1);
+                                    BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttInvalid, nowPos);
+                                    bbt.LiniaKodu = LineOffset;
+                                    sb.Remove(0, sb.Length);
                                     nowPos++;
-                                if (nowPos - StartAt > 0)
-                                {
-                                    sb.Append(TextM, StartAt, nowPos - StartAt);
-                                    tok_1.Tekst = sb.ToString();
-                                    sb.Remove(0, sb.Length);
-                                    if (limited || (nowPos < TextM.Length && STCharConsts.IsLetter(TextM[nowPos])))
-                                        tok_1.Typ = STTokenType.ttInvalid;
-                                    else
-                                    {
-                                        tok_1.Typ = STTokenType.ttImmConstant;
-                                        if ((TokenizerOptions & STTokenizer.toUseDINTAsDefaultINT) != 0)
-                                            tok_1.BuildInTypeName = "DINT";
-                                        else
-                                            tok_1.BuildInTypeName = "INT";
-                                    }
                                     Chdone = true;
                                 }
-                                StartAt = nowPos;
-                            }
-                            else if (tok_1.Typ == STTokenType.ttIdentifier || (tok_1.Typ == STTokenType.ttKeyword && STCharConsts.IsBasicBuildType(tok_1.Tekst)))
-                            {
-                                tok_1.BuildInTypeName = tok_1.Tekst;
-                                StartAt = nowPos - tok_1.Tekst.Length;
-                                nowPos++;
-                                if (nowPos < TextM.Length)
-                                {
-                                    switch (TextM[nowPos])
-                                    {
-                                        case '\'':
-                                            {
-                                                int rrr;
-                                                nowPos++;
-                                                do
-                                                {
-                                                    if (nowPos < TextM.Length)
-                                                        rrr = STCharConsts.IsEndStringChar(TextM[nowPos], nowPos + 1 < TextM.Length ? TextM[nowPos + 1] : '\u0000', '\'');
-                                                    else
-                                                        rrr = 0;
-                                                    nowPos += rrr;
-                                                }
-                                                while (nowPos < TextM.Length && (rrr > 0));
-                                                if (nowPos < TextM.Length)
-                                                    nowPos++;
-                                            }
-                                            break;
-                                        case '"':
-                                            {
-                                                int rrr;
-                                                nowPos++;
-                                                do
-                                                {
-                                                    if (nowPos < TextM.Length)
-                                                        rrr = STCharConsts.IsEndStringChar(TextM[nowPos], nowPos + 1 < TextM.Length ? TextM[nowPos + 1] : '\u0000', '"');
-                                                    else
-                                                        rrr = 0;
-                                                    nowPos += rrr;
-                                                }
-                                                while (nowPos < TextM.Length && (rrr > 0));
-                                                if (nowPos < TextM.Length)
-                                                    nowPos++;
-                                            }
-                                            break;
-                                        default:
-                                            while (nowPos < TextM.Length && !STCharConsts.IsEndConstChar(TextM[nowPos]))
-                                                nowPos++;
-                                            break;
-                                    }
-                                }
-                                if (nowPos - StartAt > 0)
-                                {
-                                    sb.Append(TextM, StartAt, nowPos - StartAt);
-                                    tok_1.Tekst = sb.ToString();
-                                    sb.Remove(0, sb.Length);
-                                    tok_1.Typ = STTokenType.ttImmConstant;
-                                    Chdone = true;
-                                }
-                                StartAt = nowPos;
-                            }
-                            else
-                            {
-                                sb.Append(TextM, nowPos, 1);
-                                BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttInvalid, nowPos);
-                                bbt.LiniaKodu = LineOffset;
-                                sb.Remove(0, sb.Length);
-                                nowPos++;
-                                Chdone = true;
                             }
                         }
                         else
@@ -888,34 +741,177 @@ namespace CodeEditor
                             nowPos++;
                             Chdone = true;
                         }
-
                     }
-                    /**>> Liczby o innej podstawie oraz stałe <<**/
-                    if (nowPos < TextM.Length && TextM[nowPos] == '\\')
+                }
+                /**>> Liczby o innej podstawie oraz stałe <<**/
+                if (nowPos < TextM.Length && TextM[nowPos] == '#')
+                {
+                    BasicToken tok_1;
+                    if (tokenlist.Lista.Count > 0)
                     {
-                        if ((TokenizerOptions & STTokenizer.toBackslashAsKeyword) != 0)
+                        tok_1 = tokenlist.Lista[tokenlist.Lista.Count - 1];
+                        if (tok_1.IsIntConst())
                         {
-                            sb.Append(TextM, StartAt, 1);
-                            BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttKeyword, nowPos);
+                            StringBuilder Bvalid_chars = new StringBuilder();
+                            int conv_base;
+                            try
+                            {
+                                conv_base = Math.Abs(Convert.ToInt32(tok_1.Tekst));
+                            }
+                            catch (System.FormatException)
+                            {
+                                conv_base = 0;
+                            }
+                            bool limited = false;
+                            if (conv_base > 36)
+                            {
+                                conv_base = 36;
+                                limited = true;
+                            }
+                            for (int cc = 0; cc < conv_base; cc++)
+                            {
+                                if (cc > 9)
+                                {
+                                    Bvalid_chars.Append(Convert.ToChar(cc - 10 + 0x41));
+                                    Bvalid_chars.Append(Convert.ToChar(cc - 10 + 0x61));
+                                }
+                                else
+                                    Bvalid_chars.Append(Convert.ToString(cc));
+                            }
+
+                            if (Bvalid_chars.Length > 0)
+                                Bvalid_chars.Append('_');
+
+                            StartAt = nowPos - tok_1.Tekst.Length;
+                            nowPos++;
+                            string valid_chars = Bvalid_chars.ToString();
+                            while (nowPos < TextM.Length && valid_chars.IndexOf(TextM[nowPos]) >= 0)
+                                nowPos++;
+                            if (nowPos - StartAt > 0)
+                            {
+                                sb.Append(TextM, StartAt, nowPos - StartAt);
+                                tok_1.Tekst = sb.ToString();
+                                sb.Remove(0, sb.Length);
+                                if (limited || (nowPos < TextM.Length && STCharConsts.IsLetter(TextM[nowPos])))
+                                    tok_1.Typ = STTokenType.ttInvalid;
+                                else
+                                {
+                                    tok_1.Typ = STTokenType.ttImmConstant;
+                                    if ((TokenizerOptions & STTokenizer.toUseDINTAsDefaultINT) != 0)
+                                        tok_1.BuildInTypeName = "DINT";
+                                    else
+                                        tok_1.BuildInTypeName = "INT";
+                                }
+                                Chdone = true;
+                            }
+                            StartAt = nowPos;
+                        }
+                        else if (tok_1.Typ == STTokenType.ttIdentifier || (tok_1.Typ == STTokenType.ttKeyword && STCharConsts.IsBasicBuildType(tok_1.Tekst)))
+                        {
+                            tok_1.BuildInTypeName = tok_1.Tekst;
+                            StartAt = nowPos - tok_1.Tekst.Length;
+                            nowPos++;
+                            if (nowPos < TextM.Length)
+                            {
+                                switch (TextM[nowPos])
+                                {
+                                    case '\'':
+                                        {
+                                            int rrr;
+                                            nowPos++;
+                                            do
+                                            {
+                                                if (nowPos < TextM.Length)
+                                                    rrr = STCharConsts.IsEndStringChar(TextM[nowPos], nowPos + 1 < TextM.Length ? TextM[nowPos + 1] : '\u0000', '\'');
+                                                else
+                                                    rrr = 0;
+                                                nowPos += rrr;
+                                            }
+                                            while (nowPos < TextM.Length && (rrr > 0));
+                                            if (nowPos < TextM.Length)
+                                                nowPos++;
+                                        }
+                                        break;
+                                    case '"':
+                                        {
+                                            int rrr;
+                                            nowPos++;
+                                            do
+                                            {
+                                                if (nowPos < TextM.Length)
+                                                    rrr = STCharConsts.IsEndStringChar(TextM[nowPos], nowPos + 1 < TextM.Length ? TextM[nowPos + 1] : '\u0000', '"');
+                                                else
+                                                    rrr = 0;
+                                                nowPos += rrr;
+                                            }
+                                            while (nowPos < TextM.Length && (rrr > 0));
+                                            if (nowPos < TextM.Length)
+                                                nowPos++;
+                                        }
+                                        break;
+                                    default:
+                                        while (nowPos < TextM.Length && !STCharConsts.IsEndConstChar(TextM[nowPos]))
+                                            nowPos++;
+                                        break;
+                                }
+                            }
+                            if (nowPos - StartAt > 0)
+                            {
+                                sb.Append(TextM, StartAt, nowPos - StartAt);
+                                tok_1.Tekst = sb.ToString();
+                                sb.Remove(0, sb.Length);
+                                tok_1.Typ = STTokenType.ttImmConstant;
+                                Chdone = true;
+                            }
+                            StartAt = nowPos;
+                        }
+                        else
+                        {
+                            sb.Append(TextM, nowPos, 1);
+                            BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttInvalid, nowPos);
                             bbt.LiniaKodu = LineOffset;
                             sb.Remove(0, sb.Length);
                             nowPos++;
                             Chdone = true;
                         }
                     }
-                    /**>> Inne <<**/
-                    if (!Chdone)
+                    else
                     {
-                        sb.Append(TextM, StartAt, 1);
+                        sb.Append(TextM, nowPos, 1);
                         BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttInvalid, nowPos);
                         bbt.LiniaKodu = LineOffset;
                         sb.Remove(0, sb.Length);
                         nowPos++;
+                        Chdone = true;
                     }
+
+                }
+                /**>> Liczby o innej podstawie oraz stałe <<**/
+                if (nowPos < TextM.Length && TextM[nowPos] == '\\')
+                {
+                    if ((TokenizerOptions & STTokenizer.toBackslashAsKeyword) != 0)
+                    {
+                        sb.Append(TextM, StartAt, 1);
+                        BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttKeyword, nowPos);
+                        bbt.LiniaKodu = LineOffset;
+                        sb.Remove(0, sb.Length);
+                        nowPos++;
+                        Chdone = true;
+                    }
+                }
+                /**>> Inne <<**/
+                if (!Chdone)
+                {
+                    sb.Append(TextM, StartAt, 1);
+                    BasicToken bbt = tokenlist.AddNewTokenType(sb.ToString(), STTokenType.ttInvalid, nowPos);
+                    bbt.LiniaKodu = LineOffset;
+                    sb.Remove(0, sb.Length);
+                    nowPos++;
                 }
             }
             return finalState;
         }
+
         public static bool IsPrevTokenTypeEx(TokenList tt, int PosFrom, STTokenType[] reqTokenGrp, STTokenType[] ignoreTokGrp, out BasicToken prevToken)
         {
             prevToken = null;

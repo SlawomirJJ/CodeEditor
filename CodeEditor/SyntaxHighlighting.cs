@@ -4,6 +4,7 @@ using FastColoredTextBoxNS;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -36,37 +37,42 @@ namespace CodeEditor
         public Style ttVCBlockStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
 
 
-
-        STTokenizer stTokenizer = new STTokenizer();
         List<int> listOfStates = new List<int>();
         FastColoredTextBox textBox;
-        int actualState;
-        Place caretPlace;
-        Range stringRange;
-        Range commentRange;
 
         Dictionary<FastColoredTextBox, List<TokenizerLineState>> lineStateDictionary = new Dictionary<FastColoredTextBox, List<TokenizerLineState>>();
 
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine(String.Format("Zmiana linii - od: {0} do: {1}", e.ChangedRange.FromLine, e.ChangedRange.ToLine));
+
             textBox = sender as FastColoredTextBox;
 
-            if (textBox != null)
+            List<TokenizerLineState> vls;
+            if (lineStateDictionary.TryGetValue(textBox, out vls))
             {
-
-                // Pobierz indeks bieżącej linii
-                int currentLineIndex = textBox.LinesCount > 0 ? (textBox.Selection.Start.iLine) : 0;
-
-                Tokenize(currentLineIndex, State);
-
-                
-
-                
+                int i = e.ChangedRange.FromLine;
+                while (i <= e.ChangedRange.ToLine)
+                {
+                    int endLine = RunUpdateTokenizerFromLine(i, vls, textBox);
+                    if (i == endLine)
+                        i++;
+                    else
+                        i = endLine;
+                }
+            }
+            else
+            {
+                vls = new List<TokenizerLineState>();
+                vls.AddRange(new TokenizerLineState[textBox.LinesCount]);
+                lineStateDictionary.Add(textBox, vls);
+                RunUpdateTokenizerFromLine(0, vls, textBox);
             }
         }
 
         private void FastColoredTextBox1_LineRemoved(object sender, LineRemovedEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine(String.Format("Usuwanie linii - index: {0}, rozmiar: {1}", e.Index, e.Count));
             textBox = (FastColoredTextBox)sender;
             List<TokenizerLineState> vls;
             if (lineStateDictionary.TryGetValue(textBox, out vls))
@@ -78,31 +84,48 @@ namespace CodeEditor
                 // Nie powinno się to zdarzyć
                 new InvalidOperationException("Usuwanie linii z nieistniejącego kolorowania");
             }
-            RunUpdateTokenizerFromLine(e.Index, vls, textBox);
+            RunUpdateTokenizerFromLine(e.Index - 1, vls, textBox);
         }
 
         private void FastColoredTextBox1_LineInserted(object sender, LineInsertedEventArgs e)
         {
             textBox = (FastColoredTextBox)sender;
             List<TokenizerLineState> vls;
+            System.Diagnostics.Debug.WriteLine(String.Format("Wstawienie linii - index: {0}, rozmiar: {1}", e.Index, e.Count));
             if (lineStateDictionary.TryGetValue(textBox, out vls))
             {
+                //DumpVLS("Before insert: ", vls);
                 vls.InsertRange(e.Index, new TokenizerLineState[e.Count]);
-                RunUpdateTokenizerFromLine(e.Index, vls, textBox);
+                //DumpVLS("End insert: ", vls);
+                // Obsłużone przez TextChanged
+                // RunUpdateTokenizerFromLine(e.Index - 1, vls, textBox);
             }
             else
             {
                 vls = new List<TokenizerLineState>();
                 vls.AddRange(new TokenizerLineState[textBox.LinesCount]);
                 lineStateDictionary.Add(textBox, vls);
-                RunUpdateTokenizerFromLine(0, vls, textBox);
+                // Obsłużone przez TextChanged
+                // RunUpdateTokenizerFromLine(0, vls, textBox);
             }            
         }
 
-        void RunUpdateTokenizerFromLine(int lineIndex, List<TokenizerLineState> stany, FastColoredTextBox textBox)
+        private void DumpVLS(string v, List<TokenizerLineState> vls)
+        {
+            StringBuilder bld = new StringBuilder(v);
+            for (int i = 0; i < vls.Count; i++)
+            {
+                if (i != 0)
+                    bld.Append(", ");
+                bld.AppendFormat("[{0}:{1}]", i, vls[i]);
+            }
+            System.Diagnostics.Debug.WriteLine(bld.ToString());
+        }
+
+        protected int RunUpdateTokenizerFromLine(int lineIndex, List<TokenizerLineState> stany, FastColoredTextBox textBox)
         {
             TokenizerLineState beginState;
-            if (lineIndex - 1 <= 0)
+            if (lineIndex - 1 < 0)
                 beginState = TokenizerLineState.tlsDefault;
             else
                 beginState = stany[lineIndex - 1];
@@ -118,9 +141,12 @@ namespace CodeEditor
                 {
                     beginState = stany[lineIndex] = endState;
                     lineIndex++;
+                    if (lineIndex >= textBox.LinesCount)
+                        cont = false;
                 }
             }
             while (cont);
+            return lineIndex;
         }
         
         
@@ -393,38 +419,7 @@ namespace CodeEditor
 
             }
 #endif
-        }
-        /// <summary>
-        /// Adding new line with starting State or if line already exist change state in existng line 
-        /// </summary>
-        /// <param name="line"></param>
-        /// <param name="state"></param>
-        void AddNewLineWithStartingState(int line, int state, FastColoredTextBox textBox)
-        {
-            
-            if (!(listOfStates.Count > line))
-            {
-                listOfStates.Add(state);
-            }
-            else
-            {
-                listOfStates[line] = state;
-                Tokenize(line, state);
-            }
-                
-        }
-
-        TokenList DisplacementTokensAfterComment(TokenList TokenListAfterComment,int firstIndexOutOfComment)
-        {
-            for (int i = 0; i < TokenListAfterComment.Lista.Count; i++)
-            {
-                TokenListAfterComment.Lista[i].Pozycja += firstIndexOutOfComment;
-            }
-            return TokenListAfterComment;
-        }
-        
-
-        
+        }        
     }
 
     public enum TokenizerLineState
