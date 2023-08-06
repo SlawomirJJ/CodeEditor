@@ -406,7 +406,6 @@ namespace CodeEditor
             this.fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.fastColoredTextBox1_TextChanged);
             this.fastColoredTextBox1.LineInserted += new System.EventHandler<FastColoredTextBoxNS.LineInsertedEventArgs>(FastColoredTextBox1_LineInserted);
             this.fastColoredTextBox1.LineRemoved += new System.EventHandler<FastColoredTextBoxNS.LineRemovedEventArgs>(FastColoredTextBox1_LineRemoved);
-            this.fastColoredTextBox1.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.fastColoredTextBox1_PreviewKeyDown);
             // 
             // tree
             // 

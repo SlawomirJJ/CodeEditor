@@ -427,7 +427,7 @@ namespace CodeEditor
                 e.Graphics.DrawString(tabPage.TabPages[e.Index].Text, f, br, rect, strF);
             }
         }
-
+        /*
         private void fastColoredTextBox1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             Place caretPlace = fastColoredTextBox1.Selection.Start;
@@ -441,7 +441,7 @@ namespace CodeEditor
                     AddNewLineWithStartingState(caretPlace.iLine+1, 1, textBox);
             }
             
-        }
+        }*/
 
 
 

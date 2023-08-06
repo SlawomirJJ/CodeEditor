@@ -26,15 +26,13 @@ namespace CodeEditor.SyntaxHighlighting.TokenizeLine
 
         public TokenizeLine(int LineIndex, TokenizerLineState BeginState, FastColoredTextBox TextBox)
         {
-            //range = new Range(textBox,LineIndex);
             lineIndex = LineIndex;
             beginState = BeginState;
             textBox = TextBox;
-            //TextM= range.Text.ToCharArray();
             ret.SourceText = TextM;
             TextM=TextBox.Text.ToCharArray();
         }
-        public (TokenList, TokenizerLineState) ProcessLine(int lineIndex, TokenizerLineState beginState, FastColoredTextBox textBox)
+        public (TokenList, TokenizerLineState) ProcessLine()
         {
             StringBuilder sb = new StringBuilder(1);
             while (nowPos < TextM.Length)
@@ -44,16 +42,12 @@ namespace CodeEditor.SyntaxHighlighting.TokenizeLine
                     case TokenizerLineState.tlsUndefined:
                         break;
                     case TokenizerLineState.tlsDefault:
-                        if(nowPos < TextM.Length && (TextM[nowPos] == '\'' || TextM[nowPos] == '\"'))
-                        {
-                            beginState = TokenizerLineState.tlsString;
-                        }
+                        TokenizeDefault();
                         break;
                     case TokenizerLineState.tlsComment:
                         break;
                     case TokenizerLineState.tlsString:
-                        TokenizeString();
-                        
+                        TokenizeString();                      
                         break;
                     case TokenizerLineState.tlsDirective:
                         break;
@@ -65,7 +59,7 @@ namespace CodeEditor.SyntaxHighlighting.TokenizeLine
                         break;
                 }
             }
-            return (ret, endState);
+            return (ret, beginState);
         }
 
 

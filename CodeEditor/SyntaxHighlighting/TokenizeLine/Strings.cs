@@ -10,7 +10,7 @@ namespace CodeEditor.SyntaxHighlighting.TokenizeLine
 {
     public partial class TokenizeLine
     {
-        void TokenizeString()
+        TokenizerLineState TokenizeString()
         {
             StartAt = nowPos;
 
@@ -22,7 +22,8 @@ namespace CodeEditor.SyntaxHighlighting.TokenizeLine
                     sb.Append(beginStringCharacter);
                     nowPos += 2;
                 }
-                while (nowPos < TextM.Length && TextM[nowPos] != beginStringCharacter)
+                
+                while (nowPos < TextM.Length)
                 {
                     char az = TextM[nowPos];
                     if (az == '$')
@@ -89,23 +90,40 @@ namespace CodeEditor.SyntaxHighlighting.TokenizeLine
 
                         sb.Append(az);
                     }
+                if (TextM[nowPos] == beginStringCharacter)
+                {
+                    sb.Append(beginStringCharacter);
+                    {
+                        BasicToken bbt = new BasicToken(sb.ToString(), STTokenType.ttImmConstant, StartAt);
+                        bbt.BuildInTypeName = beginStringCharacter == '\'' ? "STRING" : "WSTRING";
+                        bbt.LiniaKodu = lineIndex;
+                        ret.Lista.Add(bbt); // AddNewTokenType(sb.ToString(), STTokenType.ttString, StartAt);
+                    }
+                    sb.Remove(0, sb.Length);
+                    Chdone = true;
                     nowPos++;
+                    return beginState = TokenizerLineState.tlsDefault;
+                }
+                nowPos++;
                     while (nowPos + 1 < TextM.Length && TextM[nowPos] == beginStringCharacter && TextM[nowPos + 1] == beginStringCharacter)
                     {
                         sb.Append(beginStringCharacter);
                         nowPos += 2;
                     }
+                    
                 }
+                
                 nowPos++;
                 sb.Append(beginStringCharacter);
                 {
                     BasicToken bbt = new BasicToken(sb.ToString(), STTokenType.ttImmConstant, StartAt);
                     bbt.BuildInTypeName = beginStringCharacter == '\'' ? "STRING" : "WSTRING";
-                    bbt.LiniaKodu = nowPos;
+                    bbt.LiniaKodu = lineIndex;
                     ret.Lista.Add(bbt); // AddNewTokenType(sb.ToString(), STTokenType.ttString, StartAt);
                 }
                 sb.Remove(0, sb.Length);
                 Chdone = true;
+                return beginState = TokenizerLineState.tlsComment;
 
         }
     }

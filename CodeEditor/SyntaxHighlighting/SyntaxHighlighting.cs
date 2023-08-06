@@ -50,7 +50,8 @@ namespace CodeEditor
 
         private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
-            textBox = sender as FastColoredTextBox;
+            //textBox = sender as FastColoredTextBox;
+            textBox = (FastColoredTextBox)sender;
 
             if (textBox != null)
             {
@@ -58,11 +59,11 @@ namespace CodeEditor
                 // Pobierz indeks bieżącej linii
                 int currentLineIndex = textBox.LinesCount > 0 ? (textBox.Selection.Start.iLine) : 0;
 
-                Tokenize(currentLineIndex, State);
+                TokenizerLineState endState = TokenizeSingleLine(currentLineIndex, TokenizerLineState.tlsDefault, textBox);
 
-                
 
-                
+
+
             }
         }
 
@@ -86,7 +87,6 @@ namespace CodeEditor
         {
             textBox = (FastColoredTextBox)sender;
             List<TokenizerLineState> vls;
-            //lineStateDictionary.Add(textBox, TokenizerLineState.tlsComment);
             if (lineStateDictionary.TryGetValue(textBox, out vls))
             {
                 vls.InsertRange(e.Index, new TokenizerLineState[e.Count]);

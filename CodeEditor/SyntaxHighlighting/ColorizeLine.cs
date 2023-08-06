@@ -24,7 +24,7 @@ namespace CodeEditor
 
             var tokenizeLine = new TokenizeLine(lineIndex, beginState, textBox);
 
-            (TokenList tokenlist, TokenizerLineState endState) = tokenizeLine.ProcessLine(lineIndex, beginState, textBox);
+            (TokenList tokenlist, TokenizerLineState endState) = tokenizeLine.ProcessLine();
 
             foreach (var token in tokenlist.Lista)
             {
