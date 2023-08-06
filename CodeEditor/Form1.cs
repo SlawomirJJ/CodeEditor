@@ -127,7 +127,7 @@ namespace CodeEditor
                 // open file
                 StreamReader sr = new StreamReader(openFileDialog.FileName);
                 // place file text to text box
-                //fastColoredTextBox1.Text = sr.ReadToEnd();
+                fastColoredTextBox1.Text = sr.ReadToEnd();
                 // close file
                 sr.Close();
                 // text of this window = path of currently opened file
@@ -427,27 +427,6 @@ namespace CodeEditor
                 e.Graphics.DrawString(tabPage.TabPages[e.Index].Text, f, br, rect, strF);
             }
         }
-        /*
-        private void fastColoredTextBox1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            Place caretPlace = fastColoredTextBox1.Selection.Start;
-            if (stringRange!=null)
-            {
-                if (stringRange.Contains(caretPlace))
-                {
-                    AddNewLineWithStartingState(caretPlace.iLine+1, 3, textBox);
-                }
-                else
-                    AddNewLineWithStartingState(caretPlace.iLine+1, 1, textBox);
-            }
-            
-        }*/
-
-
-
-
-
-
 
         /*
         private void fastColoredTextBox1_AutoIndentNeeded(object sender, AutoIndentEventArgs e)

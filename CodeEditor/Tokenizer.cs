@@ -2354,6 +2354,14 @@ namespace CPDev.STComp05
         /// Dyrektywa weryfikacji
         /// </summary>
         ttVCBlock,
+        /// <summary>
+        /// Oznaczenie kodu VMASM
+        /// </summary>
+        ttDirectiveVMASM,
+        /// <summary>
+        /// Oznaczenie dyrektywy specjalnej
+        /// </summary>
+        ttDirectiveSpecial,
     }
 
     public static class STCharConsts
