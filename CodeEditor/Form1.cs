@@ -100,7 +100,7 @@ namespace CodeEditor
             tabPage.SelectedTab = newTabPage;
 
             //obsługa zdarzenia TextChanged
-            fastColoredTextBox1.TextChanged += new EventHandler<TextChangedEventArgs>(fastColoredTextBox1_TextChanged);
+            fastColoredTextBox1.TextChanged += new EventHandler<TextChangedEventArgs>(fastColoredTextBox1_VisibleRangeChangedDelayed);
             fastColoredTextBox1.LineInserted += FastColoredTextBox1_LineInserted;
             fastColoredTextBox1.LineRemoved += FastColoredTextBox1_LineRemoved;
             fastColoredTextBox1.Dock = DockStyle.Fill;
@@ -372,7 +372,7 @@ namespace CodeEditor
                 tabPage.SelectedTab = newTabPage;
 
                 //obsługa zdarzenia TextChanged
-                fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(fastColoredTextBox1_TextChanged);
+                fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(fastColoredTextBox1_VisibleRangeChangedDelayed);
                 fastColoredTextBox1.LineInserted += FastColoredTextBox1_LineInserted;
                 fastColoredTextBox1.LineRemoved += FastColoredTextBox1_LineRemoved;
                 fastColoredTextBox1.Dock = DockStyle.Fill;
@@ -427,6 +427,13 @@ namespace CodeEditor
                 e.Graphics.DrawString(tabPage.TabPages[e.Index].Text, f, br, rect, strF);
             }
         }
+
+        
+
+
+
+
+
 
         /*
         private void fastColoredTextBox1_AutoIndentNeeded(object sender, AutoIndentEventArgs e)

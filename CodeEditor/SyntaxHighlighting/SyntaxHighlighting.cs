@@ -22,53 +22,56 @@ namespace CodeEditor
     {
         //private int state;
         // Style
-        public Style ttIdentifierStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);// Identyfikator
-        public Style ttImmConstantStyle = new TextStyle(Brushes.DarkGreen, null, FontStyle.Regular);// Stała
-        public Style ttKeywordStyle = new TextStyle(Brushes.Blue, null, FontStyle.Regular);// Słowo kluczowe
-        public Style ttInvalidStyle = new TextStyle(Brushes.Red, null, FontStyle.Regular);// Niepoprawne
-        public Style ttOperatorStyle = new TextStyle(Brushes.Purple, null, FontStyle.Regular); // 
-        public Style ttDelimiterStyle = new TextStyle(Brushes.DarkGray, null, FontStyle.Regular);// Separator
+        public Style ttIdentifierStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
+        public Style ttImmConstantStyle = new TextStyle(Brushes.DarkGreen, null, FontStyle.Regular);
+        public Style ttKeywordStyle = new TextStyle(Brushes.Blue, null, FontStyle.Regular);
+        public Style ttInvalidStyle = new TextStyle(Brushes.Red, null, FontStyle.Regular);
+        public Style ttOperatorStyle = new TextStyle(Brushes.Purple, null, FontStyle.Regular);
+        public Style ttDelimiterStyle = new TextStyle(Brushes.DarkGray, null, FontStyle.Regular);
         public Style ttCommentStyle = new TextStyle(Brushes.Green, null, FontStyle.Regular);
         public Style ttUnknownStyle = new TextStyle(Brushes.Gray, null, FontStyle.Regular);
         public Style ttDirectiveStyle = new TextStyle(Brushes.DarkOrange, null, FontStyle.Regular);
         public Style ttWhiteSpaceStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
-        public Style ttVarLocDescStyle = new TextStyle(Brushes.Yellow, null, FontStyle.Regular);// Opis lokalizacji zmiennej
-        public Style ttILLabelStyle = new TextStyle(Brushes.Pink, null, FontStyle.Regular);// Etykieta IL
+        public Style ttVarLocDescStyle = new TextStyle(Brushes.Yellow, null, FontStyle.Regular);
+        public Style ttILLabelStyle = new TextStyle(Brushes.Pink, null, FontStyle.Regular);
         public Style ttVCBlockStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
         public Style ttDirVMASMStyle = new TextStyle(Brushes.LightYellow, Brushes.BlueViolet, FontStyle.Regular); 
         public Style ttDirSpecStyle = new TextStyle(Brushes.Turquoise, Brushes.Black, FontStyle.Regular);
 
         List<int> listOfStates = new List<int>();
         FastColoredTextBox textBox;
-
+        int lastVisibleLine;
         Dictionary<FastColoredTextBox, List<TokenizerLineState>> lineStateDictionary = new Dictionary<FastColoredTextBox, List<TokenizerLineState>>();
 
-        private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
+
+
+        private void fastColoredTextBox1_VisibleRangeChangedDelayed(object sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine(String.Format("Zmiana linii - od: {0} do: {1}", e.ChangedRange.FromLine, e.ChangedRange.ToLine));
-
             textBox = sender as FastColoredTextBox;
+            var firstVisibleLine = textBox.VisibleRange.Start.iLine;
+            lastVisibleLine = textBox.VisibleRange.End.iLine;
+                System.Diagnostics.Debug.WriteLine(String.Format("Zmiana linii - od: {0} do: {1}", firstVisibleLine, lastVisibleLine));
 
-            List<TokenizerLineState> vls;
-            if (lineStateDictionary.TryGetValue(textBox, out vls))
-            {
-                int i = e.ChangedRange.FromLine;
-                while (i <= e.ChangedRange.ToLine)
+                List<TokenizerLineState> vls;
+                if (lineStateDictionary.TryGetValue(textBox, out vls))
                 {
-                    int endLine = RunUpdateTokenizerFromLine(i, vls, textBox);
-                    if (i == endLine)
-                        i++;
-                    else
-                        i = endLine;
+                    int i = firstVisibleLine;
+                    while (i <= lastVisibleLine)
+                    {
+                        int endLine = RunUpdateTokenizerFromLine(i, vls, textBox);
+                        if (i == endLine)
+                            i++;
+                        else
+                            i = endLine;
+                    }
                 }
-            }
-            else
-            {
-                vls = new List<TokenizerLineState>();
-                vls.AddRange(new TokenizerLineState[textBox.LinesCount]);
-                lineStateDictionary.Add(textBox, vls);
-                RunUpdateTokenizerFromLine(0, vls, textBox);
-            }
+                else
+                {
+                    vls = new List<TokenizerLineState>();
+                    vls.AddRange(new TokenizerLineState[textBox.LinesCount]);
+                    lineStateDictionary.Add(textBox, vls);
+                    RunUpdateTokenizerFromLine(0, vls, textBox);
+                }
         }
 
         private void FastColoredTextBox1_LineRemoved(object sender, LineRemovedEventArgs e)
@@ -122,7 +125,7 @@ namespace CodeEditor
             }
             System.Diagnostics.Debug.WriteLine(bld.ToString());
         }
-
+        
         protected int RunUpdateTokenizerFromLine(int lineIndex, List<TokenizerLineState> stany, FastColoredTextBox textBox)
         {
             TokenizerLineState beginState;
@@ -136,13 +139,13 @@ namespace CodeEditor
             {
                 cont = true;
                 TokenizerLineState endState = TokenizeSingleLine(lineIndex, beginState, textBox);
-                if (endState == stany[lineIndex])
+                if (endState == stany[lineIndex] || lineIndex >= lastVisibleLine)
                     cont = false;
                 else
                 {
                     beginState = stany[lineIndex] = endState;
                     lineIndex++;
-                    if (lineIndex >= textBox.LinesCount)
+                    if (lineIndex >= textBox.LinesCount || lineIndex >= lastVisibleLine)
                         cont = false;
                 }
             }

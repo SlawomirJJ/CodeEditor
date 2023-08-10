@@ -394,7 +394,7 @@ namespace CodeEditor
             this.fastColoredTextBox1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.fastColoredTextBox1.IsReplaceMode = false;
             this.fastColoredTextBox1.Location = new System.Drawing.Point(0, 0);
-            this.fastColoredTextBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.fastColoredTextBox1.Margin = new System.Windows.Forms.Padding(2);
             this.fastColoredTextBox1.Name = "fastColoredTextBox1";
             this.fastColoredTextBox1.Paddings = new System.Windows.Forms.Padding(0);
             this.fastColoredTextBox1.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
@@ -403,9 +403,9 @@ namespace CodeEditor
             this.fastColoredTextBox1.Size = new System.Drawing.Size(281, 180);
             this.fastColoredTextBox1.TabIndex = 0;
             this.fastColoredTextBox1.Zoom = 100;
-            this.fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.fastColoredTextBox1_TextChanged);
-            this.fastColoredTextBox1.LineInserted += new System.EventHandler<FastColoredTextBoxNS.LineInsertedEventArgs>(FastColoredTextBox1_LineInserted);
-            this.fastColoredTextBox1.LineRemoved += new System.EventHandler<FastColoredTextBoxNS.LineRemovedEventArgs>(FastColoredTextBox1_LineRemoved);
+            this.fastColoredTextBox1.VisibleRangeChangedDelayed += new System.EventHandler(this.fastColoredTextBox1_VisibleRangeChangedDelayed);
+            this.fastColoredTextBox1.LineInserted += new System.EventHandler<FastColoredTextBoxNS.LineInsertedEventArgs>(this.FastColoredTextBox1_LineInserted);
+            this.fastColoredTextBox1.LineRemoved += new System.EventHandler<FastColoredTextBoxNS.LineRemovedEventArgs>(this.FastColoredTextBox1_LineRemoved);
             // 
             // tree
             // 
@@ -415,7 +415,7 @@ namespace CodeEditor
             this.tree.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.tree.ForeColor = System.Drawing.SystemColors.MenuText;
             this.tree.Location = new System.Drawing.Point(0, 22);
-            this.tree.Margin = new System.Windows.Forms.Padding(1, 1, 1, 1);
+            this.tree.Margin = new System.Windows.Forms.Padding(1);
             this.tree.Name = "tree";
             this.tree.Size = new System.Drawing.Size(113, 202);
             this.tree.TabIndex = 4;
@@ -432,9 +432,9 @@ namespace CodeEditor
             // 
             this.tabPage1.Controls.Add(this.fastColoredTextBox1);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(2);
             this.tabPage1.Size = new System.Drawing.Size(278, 176);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "newFile1";
@@ -448,7 +448,7 @@ namespace CodeEditor
             this.tabPage.Controls.Add(this.tabPage1);
             this.tabPage.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
             this.tabPage.Location = new System.Drawing.Point(114, 22);
-            this.tabPage.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage.Name = "tabPage";
             this.tabPage.SelectedIndex = 0;
             this.tabPage.Size = new System.Drawing.Size(286, 202);
@@ -468,7 +468,7 @@ namespace CodeEditor
             this.Controls.Add(this.tabPage);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(1, 1, 1, 1);
+            this.Margin = new System.Windows.Forms.Padding(1);
             this.Name = "Form1";
             this.Text = "STNote";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
