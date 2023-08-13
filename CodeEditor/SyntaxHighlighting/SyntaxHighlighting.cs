@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using static CodeEditor.GlobalVariables;
@@ -56,14 +57,35 @@ namespace CodeEditor
                 if (lineStateDictionary.TryGetValue(textBox, out vls))
                 {
                     int i = firstVisibleLine;
-                    while (i <= lastVisibleLine)
+                    int firstUndefinedIndex = vls.FindIndex(x => x == TokenizerLineState.tlsUndefined);
+                    if (firstUndefinedIndex<0)
                     {
-                        int endLine = RunUpdateTokenizerFromLine(i, vls, textBox);
-                        if (i == endLine)
-                            i++;
-                        else
-                            i = endLine;
+                        firstUndefinedIndex = 0;
                     }
+                    int j = firstUndefinedIndex;
+                    if (firstVisibleLine > firstUndefinedIndex)
+                    {
+                        while (j <= lastVisibleLine)
+                        {
+                            int endLine = RunUpdateTokenizerFromLine(j, vls, textBox);
+                            if (j == endLine)
+                                j++;
+                            else
+                                j = endLine;
+                        }
+                    }
+                    else
+                    {
+                        while (i <= lastVisibleLine)
+                        {
+                            int endLine = RunUpdateTokenizerFromLine(i, vls, textBox);
+                            if (i == endLine)
+                                i++;
+                            else
+                                i = endLine;
+                        }
+                    }
+                
                 }
                 else
                 {
