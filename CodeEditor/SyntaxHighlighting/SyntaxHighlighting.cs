@@ -51,7 +51,7 @@ namespace CodeEditor
             textBox = sender as FastColoredTextBox;
             var firstVisibleLine = textBox.VisibleRange.Start.iLine;
             lastVisibleLine = textBox.VisibleRange.End.iLine;
-                System.Diagnostics.Debug.WriteLine(String.Format("Zmiana linii - od: {0} do: {1}", firstVisibleLine, lastVisibleLine));
+                //System.Diagnostics.Debug.WriteLine(String.Format("Zmiana linii - od: {0} do: {1}", firstVisibleLine, lastVisibleLine));
 
                 List<TokenizerLineState> vls;
                 if (lineStateDictionary.TryGetValue(textBox, out vls))
@@ -98,7 +98,7 @@ namespace CodeEditor
 
         private void FastColoredTextBox1_LineRemoved(object sender, LineRemovedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine(String.Format("Usuwanie linii - index: {0}, rozmiar: {1}", e.Index, e.Count));
+            //System.Diagnostics.Debug.WriteLine(String.Format("Usuwanie linii - index: {0}, rozmiar: {1}", e.Index, e.Count));
             textBox = (FastColoredTextBox)sender;
             List<TokenizerLineState> vls;
             if (lineStateDictionary.TryGetValue(textBox, out vls))
@@ -117,7 +117,7 @@ namespace CodeEditor
         {
             textBox = (FastColoredTextBox)sender;
             List<TokenizerLineState> vls;
-            System.Diagnostics.Debug.WriteLine(String.Format("Wstawienie linii - index: {0}, rozmiar: {1}", e.Index, e.Count));
+            //System.Diagnostics.Debug.WriteLine(String.Format("Wstawienie linii - index: {0}, rozmiar: {1}", e.Index, e.Count));
             if (lineStateDictionary.TryGetValue(textBox, out vls))
             {
                 //DumpVLS("Before insert: ", vls);
@@ -145,7 +145,7 @@ namespace CodeEditor
                     bld.Append(", ");
                 bld.AppendFormat("[{0}:{1}]", i, vls[i]);
             }
-            System.Diagnostics.Debug.WriteLine(bld.ToString());
+            //System.Diagnostics.Debug.WriteLine(bld.ToString());
         }
         
         protected int RunUpdateTokenizerFromLine(int lineIndex, List<TokenizerLineState> stany, FastColoredTextBox textBox)

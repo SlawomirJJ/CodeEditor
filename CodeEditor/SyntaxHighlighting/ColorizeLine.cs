@@ -104,7 +104,7 @@ namespace CodeEditor
                 }
 
             }
-            System.Diagnostics.Debug.WriteLine(s1 + String.Format(", stanKońc: {0}, tokenów: {1}", beginState, tokenlist.Lista.Count));
+            //System.Diagnostics.Debug.WriteLine(s1 + String.Format(", stanKońc: {0}, tokenów: {1}", beginState, tokenlist.Lista.Count));
             return beginState;
         }
 
