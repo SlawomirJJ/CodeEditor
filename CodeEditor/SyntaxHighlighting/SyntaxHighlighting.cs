@@ -44,57 +44,57 @@ namespace CodeEditor
         int lastVisibleLine;
         Dictionary<FastColoredTextBox, List<TokenizerLineState>> lineStateDictionary = new Dictionary<FastColoredTextBox, List<TokenizerLineState>>();
 
-
-
-        private void fastColoredTextBox1_VisibleRangeChangedDelayed(object sender, EventArgs e)
+        private void fastColoredTextBox1_VisibleRangeChanged(object sender, EventArgs e)
         {
             textBox = sender as FastColoredTextBox;
             var firstVisibleLine = textBox.VisibleRange.Start.iLine;
             lastVisibleLine = textBox.VisibleRange.End.iLine;
-                //System.Diagnostics.Debug.WriteLine(String.Format("Zmiana linii - od: {0} do: {1}", firstVisibleLine, lastVisibleLine));
+            //System.Diagnostics.Debug.WriteLine(String.Format("Zmiana linii - od: {0} do: {1}", firstVisibleLine, lastVisibleLine));
 
-                List<TokenizerLineState> vls;
-                if (lineStateDictionary.TryGetValue(textBox, out vls))
+            List<TokenizerLineState> vls;
+            if (lineStateDictionary.TryGetValue(textBox, out vls))
+            {
+                int i = firstVisibleLine;
+                int firstUndefinedIndex = vls.FindIndex(x => x == TokenizerLineState.tlsUndefined);
+                if (firstUndefinedIndex < 0)
                 {
-                    int i = firstVisibleLine;
-                    int firstUndefinedIndex = vls.FindIndex(x => x == TokenizerLineState.tlsUndefined);
-                    if (firstUndefinedIndex<0)
+                    firstUndefinedIndex = 0;
+                }
+                int j = firstUndefinedIndex;
+                if (firstVisibleLine > firstUndefinedIndex)
+                {
+                    while (j <= lastVisibleLine)
                     {
-                        firstUndefinedIndex = 0;
+                        int endLine = RunUpdateTokenizerFromLine(j, vls, textBox);
+                        if (j == endLine)
+                            j++;
+                        else
+                            j = endLine;
                     }
-                    int j = firstUndefinedIndex;
-                    if (firstVisibleLine > firstUndefinedIndex)
-                    {
-                        while (j <= lastVisibleLine)
-                        {
-                            int endLine = RunUpdateTokenizerFromLine(j, vls, textBox);
-                            if (j == endLine)
-                                j++;
-                            else
-                                j = endLine;
-                        }
-                    }
-                    else
-                    {
-                        while (i <= lastVisibleLine)
-                        {
-                            int endLine = RunUpdateTokenizerFromLine(i, vls, textBox);
-                            if (i == endLine)
-                                i++;
-                            else
-                                i = endLine;
-                        }
-                    }
-                
                 }
                 else
                 {
-                    vls = new List<TokenizerLineState>();
-                    vls.AddRange(new TokenizerLineState[textBox.LinesCount]);
-                    lineStateDictionary.Add(textBox, vls);
-                    RunUpdateTokenizerFromLine(0, vls, textBox);
+                    while (i <= lastVisibleLine)
+                    {
+                        int endLine = RunUpdateTokenizerFromLine(i, vls, textBox);
+                        if (i == endLine)
+                            i++;
+                        else
+                            i = endLine;
+                    }
                 }
+
+            }
+            else
+            {
+                vls = new List<TokenizerLineState>();
+                vls.AddRange(new TokenizerLineState[textBox.LinesCount]);
+                lineStateDictionary.Add(textBox, vls);
+                RunUpdateTokenizerFromLine(0, vls, textBox);
+            }
         }
+
+        
 
         private void FastColoredTextBox1_LineRemoved(object sender, LineRemovedEventArgs e)
         {

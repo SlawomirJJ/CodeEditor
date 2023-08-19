@@ -100,7 +100,6 @@ namespace CodeEditor
             tabPage.SelectedTab = newTabPage;
 
             //obsługa zdarzenia TextChanged
-            fastColoredTextBox1.TextChanged += new EventHandler<TextChangedEventArgs>(fastColoredTextBox1_VisibleRangeChangedDelayed);
             fastColoredTextBox1.LineInserted += FastColoredTextBox1_LineInserted;
             fastColoredTextBox1.LineRemoved += FastColoredTextBox1_LineRemoved;
             fastColoredTextBox1.Dock = DockStyle.Fill;
@@ -236,16 +235,6 @@ namespace CodeEditor
         {
            /// fastColoredTextBox1.Undo();
         }
-        /*
-        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ////fastColoredTextBox1.Redo();
-        }   */
-
-        
-
-
-
 
         private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -264,13 +253,6 @@ namespace CodeEditor
                     }
                 }
             }            
-        }
-
-
-
-        private void fastColoredTextBox1_Load(object sender, EventArgs e)
-        {
-
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -372,7 +354,6 @@ namespace CodeEditor
                 tabPage.SelectedTab = newTabPage;
 
                 //obsługa zdarzenia TextChanged
-                fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(fastColoredTextBox1_VisibleRangeChangedDelayed);
                 fastColoredTextBox1.LineInserted += FastColoredTextBox1_LineInserted;
                 fastColoredTextBox1.LineRemoved += FastColoredTextBox1_LineRemoved;
                 fastColoredTextBox1.Dock = DockStyle.Fill;
@@ -429,6 +410,8 @@ namespace CodeEditor
         }
 
         
+
+
 
 
 
